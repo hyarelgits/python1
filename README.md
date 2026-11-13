@@ -138,5 +138,20 @@ ssh -L 8000:127.0.0.1:8000 -L 8001:127.0.0.1:8001 USERNAME@VM_IP
 - `ubuntu_rag_fastapi_mcp_guide.txt`: detailed step-by-step guide with
   troubleshooting instructions.
 
+## Learning guides
+
+The `learning/` folder contains separate beginner-to-expert guides:
+
+- [Python](learning/python_learning.txt)
+- [Machine Learning](learning/machine_learning_learning.txt)
+- [Deep Learning](learning/deep_learning_learning.txt)
+- [RAG](learning/rag_learning.txt)
+- [ChromaDB](learning/chromadb_learning.txt)
+- [PostgreSQL](learning/postgresql_learning.txt)
+- [LangChain](learning/langchain_learning.txt)
+- [LangGraph](learning/langgraph_learning.txt)
+- [MCP](learning/mcp_learning.txt)
+- [FastAPI](learning/fastapi_learning.txt)
+
 Stop each running server with Ctrl+C in its terminal. Never commit private
 documents, model files, or `chroma_db/`.

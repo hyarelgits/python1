@@ -1,0 +1,131 @@
+FASTAPI LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+==============================================
+
+WHAT FASTAPI IS
+---------------
+FastAPI is a Python framework for building HTTP APIs. It uses Python type
+hints and Pydantic models to validate input, serialize output, and generate
+OpenAPI documentation. Swagger UI is usually available at /docs.
+
+INSTALLATION AND RUNNING
+------------------------
+Install FastAPI and Uvicorn in a virtual environment:
+
+    python -m pip install fastapi "uvicorn[standard]"
+
+Save an app as main.py and start the development server:
+
+    uvicorn main:app --reload
+
+Open http://127.0.0.1:8000/docs to explore the generated API documentation.
+Use --reload only for development, not as the production process manager.
+
+LEVEL 1: BEGINNER
+-----------------
+Example 1: create a health endpoint.
+
+    # FastAPI is the application class.
+    from fastapi import FastAPI
+
+    # Create the application object imported by Uvicorn as main:app.
+    app = FastAPI(title="Learning API")
+
+    # GET is suitable for a read-only health check.
+    @app.get("/health")
+    def health_check() -> dict[str, str]:
+        # Return a JSON-compatible dictionary.
+        return {"status": "ok"}
+
+Example 2: validate a JSON request with a Pydantic model.
+
+    # BaseModel declares and validates the request fields.
+    from pydantic import BaseModel, Field
+    # FastAPI registers the HTTP route and builds its schema.
+    from fastapi import FastAPI
+
+    # Define the required shape and validation limits for a question.
+    class QuestionRequest(BaseModel):
+        question: str = Field(min_length=1, max_length=2000)
+
+    # Create the app instance.
+    app = FastAPI()
+
+    # FastAPI parses and validates the JSON body before calling this function.
+    @app.post("/query")
+    def query_documents(request: QuestionRequest) -> dict[str, str]:
+        # Replace this teaching placeholder with a RAG graph call.
+        return {"answer": f"You asked: {request.question}"}
+
+Example 3: use a query parameter and return a typed response.
+
+    # BaseModel defines the response object's fields.
+    from pydantic import BaseModel
+    # FastAPI provides the API route decorator.
+    from fastapi import FastAPI
+
+    # Define the JSON response shape.
+    class Greeting(BaseModel):
+        message: str
+
+    # Create an independent demo application.
+    app = FastAPI()
+
+    # FastAPI reads name from the URL query string and validates the type.
+    @app.get("/greet", response_model=Greeting)
+    def greet(name: str = "learner") -> Greeting:
+        # Return a model matching the documented response schema.
+        return Greeting(message=f"Hello, {name}!")
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn path/query parameters, status codes, response models, dependency
+injection, exception handling, routers, settings, middleware, and testing
+with FastAPI's TestClient. Split larger apps into focused routers.
+
+LEVEL 3: ADVANCED
+-----------------
+Study async I/O, lifespan events, database sessions, background tasks,
+streaming responses, OAuth2, CORS, rate limiting, structured logging, and
+OpenAPI customization. Use async endpoints when the libraries they call
+support async I/O; async syntax alone does not make blocking work nonblocking.
+
+Example dependency: share a small configuration value with a route.
+
+    # Depends declares a dependency FastAPI resolves for each request.
+    from fastapi import Depends, FastAPI
+
+    # Create an app for this standalone example.
+    app = FastAPI()
+
+    # A dependency function can later be replaced in tests.
+    def get_service_name() -> str:
+        return "document-search"
+
+    # FastAPI calls the dependency and injects its result.
+    @app.get("/service")
+    def service_info(
+        service_name: str = Depends(get_service_name),
+    ) -> dict[str, str]:
+        return {"service": service_name}
+
+LEVEL 4: EXPERT
+---------------
+Expert API work includes authentication and authorization, input/output
+limits, observability, threat modeling, deployment, graceful shutdown,
+database transaction boundaries, schema evolution, and reliable testing.
+
+Production checklist:
+  - Bind to a deliberate interface; expose only through a trusted network.
+  - Use a production server setup, health checks, and graceful shutdown.
+  - Keep secrets in environment/secret-management systems, not source files.
+  - Validate request size and enforce timeouts and rate limits.
+  - Do not return stack traces or private data in error responses.
+  - Test successful, invalid, unauthorized, and failure cases.
+  - Put authentication and authorization on protected routes.
+
+PRACTICE
+--------
+1. Build a small contacts API with create, list, update, and delete routes.
+2. Add request/response models and tests for invalid input.
+3. Connect a route to the RAG starter and return source filenames.

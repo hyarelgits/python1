@@ -1,0 +1,143 @@
+RETRIEVAL-AUGMENTED GENERATION (RAG) LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+================================================
+
+WHAT RAG IS
+-----------
+RAG is an application pattern, not a model-training method. It finds relevant
+passages in trusted data and gives those passages to a language model as
+context. The model then writes an answer grounded in the retrieved context.
+
+Typical request flow:
+  1. Load and clean source documents.
+  2. Split documents into smaller chunks and retain source metadata.
+  3. Use an embedding model to turn each chunk into a vector.
+  4. Store vectors and text in a vector database such as ChromaDB.
+  5. Embed a user question and retrieve similar chunks.
+  6. Put retrieved chunks and the question into a prompt.
+  7. Generate an answer and return citations or source names.
+
+RAG can make answers more current and traceable, but it does not guarantee
+truth. Poor documents, retrieval, prompts, or evaluation can still produce
+wrong answers. Do not send confidential data to an external model without
+authorization.
+
+LEVEL 1: BEGINNER
+-----------------
+Learn these terms:
+  - Document: source text plus metadata such as filename or page.
+  - Chunk: a smaller passage retrieved independently.
+  - Embedding: a vector representation of text used for similarity search.
+  - Retriever: component that selects relevant documents for a query.
+  - Context: retrieved text included with the question sent to the model.
+  - Citation: source reference that helps a user verify an answer.
+  - Top-k: number of passages returned by retrieval.
+
+Chunk size and overlap are tradeoffs. Small chunks are precise but may lack
+context. Large chunks preserve context but can add irrelevant text. Start
+with a modest chunk size, inspect retrieved passages, and tune against real
+questions rather than assuming one size is correct.
+
+Example 1: split a document.
+
+    # Document preserves the text and its source.
+    from langchain_core.documents import Document
+    # Split long text into overlapping pieces.
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+    # Attach a filename to the source document.
+    document = Document(
+        page_content="RAG retrieves useful text before a language model answers.",
+        metadata={"source": "lesson.txt"},
+    )
+    # Split at a target size and keep a little shared context.
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=80)
+    # Turn one document into zero or more smaller documents.
+    chunks = splitter.split_documents([document])
+
+Example 2: index and retrieve with the project configuration.
+
+    # Chroma stores vectors and their source documents.
+    from langchain_chroma import Chroma
+    # OllamaEmbeddings uses a local embedding model.
+    from langchain_ollama import OllamaEmbeddings
+
+    # Create or open a persistent collection.
+    store = Chroma(
+        collection_name="learning_rag",
+        embedding_function=OllamaEmbeddings(model="nomic-embed-text"),
+        persist_directory="./chroma_db",
+    )
+    # Create one unique ID for every chunk, even when the splitter made several.
+    chunk_ids = [f"lesson-chunk-{index}" for index in range(len(chunks))]
+    # Add all passages and their matching IDs.
+    store.add_documents(chunks, ids=chunk_ids)
+    # Retrieve the two passages most similar to this question.
+    matches = store.similarity_search("What does RAG do?", k=2)
+
+Example 3: require the model to answer only from retrieved passages.
+
+    # Join the passage text and preserve source names in the prompt.
+    context = "\n\n".join(
+        f"Source: {doc.metadata.get('source', 'unknown')}\n{doc.page_content}"
+        for doc in matches
+    )
+    # Ask the model to say when the context is insufficient.
+    prompt = f"""Use only this context. If it does not answer the question,
+    say you do not know.
+
+    Context:
+    {context}
+
+    Question:
+    What does RAG do?
+    """
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn PDF/HTML ingestion, metadata filtering, hybrid search (keyword plus
+vector search), query rewriting, reranking, conversation history, and
+structured answers. Keep conversation memory separate from durable knowledge.
+Track source file, page, title, access rules, and document version in metadata.
+
+Evaluate each stage:
+  - Retrieval: did the right source appear in top-k results?
+  - Grounding: are answer claims supported by retrieved text?
+  - Citation: do cited sources actually support the claims?
+  - Usefulness: did the user get an actionable answer?
+  - Latency/cost: how long did retrieval and generation take?
+
+LEVEL 3: ADVANCED
+-----------------
+Study query decomposition, multi-query retrieval, metadata-aware routing,
+context compression, rank fusion, reranking models, cache invalidation,
+streaming, access control, and RAG evaluation sets. Tune retrieval and
+generation separately so a poor answer can be diagnosed.
+
+Create an evaluation dataset containing:
+  1. A question.
+  2. The expected source passage or source file.
+  3. An acceptable answer or required facts.
+  4. An unanswerable question that should receive an honest refusal.
+
+LEVEL 4: EXPERT
+---------------
+Expert RAG includes data lifecycle and permissions, tenant isolation,
+document revocation, source freshness, adversarial-document handling,
+retrieval observability, production evaluation, incident response, and
+controlled model upgrades.
+
+Security and reliability checklist:
+  - Treat retrieved text as untrusted data, not as system instructions.
+  - Enforce document permissions before retrieving or returning chunks.
+  - Do not log secrets or private document content unnecessarily.
+  - Limit request size, retrieved context size, and model output size.
+  - Record source IDs and model/config versions for reproducibility.
+  - Test prompt injection hidden inside documents.
+  - Provide a useful "I do not know" path when evidence is missing.
+
+PRACTICE PROJECTS
+-----------------
+1. Index a few text files and inspect the top three retrieved chunks.
+2. Add citations and test questions whose answers are absent.
+3. Build a small evaluation set and compare chunk sizes and top-k values.

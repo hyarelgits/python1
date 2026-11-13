@@ -1,0 +1,129 @@
+LANGGRAPH LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+==============================================
+
+WHAT LANGGRAPH IS
+-----------------
+LangGraph is a framework for building stateful, multi-step workflows around
+language models and other Python functions. A graph contains nodes (work),
+edges (routing), and state (data passed between steps). A graph can loop,
+branch, pause for review, and resume from a checkpoint.
+
+Use a simple LangChain chain for a short linear prompt-model pipeline. Use
+LangGraph when a workflow needs state, conditional paths, cycles, or durable
+progress.
+
+INSTALLATION
+------------
+In a Python virtual environment:
+
+    python -m pip install langgraph langchain langchain-ollama
+
+LEVEL 1: BEGINNER
+-----------------
+Example 1: build a two-step graph.
+
+    # TypedDict describes the state fields shared by graph nodes.
+    from typing import TypedDict
+    # StateGraph builds a graph; START and END mark its boundaries.
+    from langgraph.graph import StateGraph, START, END
+
+    # Define the values that travel through the graph.
+    class State(TypedDict):
+        question: str
+        answer: str
+
+    # A node receives the current state and returns updated fields.
+    def answer_question(state: State) -> dict:
+        return {"answer": f"You asked: {state['question']}"}
+
+    # Create a graph whose state follows the State type.
+    builder = StateGraph(State)
+    # Register a function under a readable node name.
+    builder.add_node("answer", answer_question)
+    # Connect the graph's start to the node, then the node to its end.
+    builder.add_edge(START, "answer")
+    builder.add_edge("answer", END)
+    # Compile the definition into a runnable graph.
+    graph = builder.compile()
+    # Run the graph with its initial state.
+    print(graph.invoke({"question": "What is a node?", "answer": ""}))
+
+Example 2: choose a path with a conditional edge.
+
+    # A routing function returns one of the declared route names.
+    def choose_path(state: State) -> str:
+        return "short" if len(state["question"]) < 20 else "long"
+
+    # These nodes make different results to demonstrate conditional routing.
+    def short_answer(state: State) -> dict:
+        return {"answer": "Short path: " + state["question"]}
+
+    def long_answer(state: State) -> dict:
+        return {"answer": "Long path: " + state["question"]}
+
+    # Create nodes and route to one of them based on the current state.
+    builder = StateGraph(State)
+    builder.add_node("short", short_answer)
+    builder.add_node("long", long_answer)
+    builder.add_conditional_edges(
+        START,
+        choose_path,
+        {"short": "short", "long": "long"},
+    )
+    builder.add_edge("short", END)
+    builder.add_edge("long", END)
+    graph = builder.compile()
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn state schemas, reducers for appending/merging state, parallel nodes,
+conditional routing, cycles, retries, streaming, and tool-calling agents.
+Nodes should be small and explicit. Add a route for expected failures rather
+than hiding an error with an empty answer.
+
+Example 3: checkpoint state by conversation/thread ID.
+
+    # InMemorySaver keeps checkpoints in process memory for this demo.
+    from langgraph.checkpoint.memory import InMemorySaver
+
+    # Compile the graph with a checkpointer.
+    graph = builder.compile(checkpointer=InMemorySaver())
+    # A stable thread_id tells LangGraph which conversation to resume.
+    config = {"configurable": {"thread_id": "lesson-thread-1"}}
+    # Save the initial state for this thread.
+    first = graph.invoke(
+        {"question": "What is state?", "answer": ""},
+        config=config,
+    )
+    # A later call can continue using that thread's checkpointed state.
+    continued = graph.invoke(
+        {"question": "What is a node?", "answer": ""},
+        config=config,
+    )
+
+LEVEL 3: ADVANCED
+-----------------
+Study human-in-the-loop interrupts, durable checkpointers, subgraphs,
+streaming events, parallel execution, command-based routing, idempotency,
+timeouts, and recovery after partial failure. Use a persistent checkpointer
+for production; an in-memory saver is lost when the process stops.
+
+LEVEL 4: EXPERT
+---------------
+Expert graph design includes explicit state contracts, safe replay, versioned
+checkpoints, observability, authorization, workflow migrations, and testing
+for retries and interruptions.
+
+Reliability checklist:
+  - Make retried nodes safe to run more than once.
+  - Keep credentials out of graph state and logs.
+  - Validate model and tool output before using it.
+  - Test each node and each route independently.
+  - Decide which state is sensitive and how long checkpoints are retained.
+
+PRACTICE
+--------
+1. Add a second node that checks the answer before returning it.
+2. Add a conditional route for questions that cannot be answered.
+3. Use a persistent checkpointer and resume a thread after restarting the app.

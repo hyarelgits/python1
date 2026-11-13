@@ -1,0 +1,105 @@
+CHROMADB LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+==============================================
+
+WHAT CHROMADB IS
+----------------
+ChromaDB is a vector database. A collection stores records with IDs,
+documents, metadata, and embeddings. Embeddings represent meaning as numeric
+vectors; similarity search returns vectors close to a query vector.
+
+Use persistent storage for an app that must keep data after it exits. Do not
+commit the generated database folder or private source documents to Git.
+
+INSTALLATION
+------------
+Activate a Python 3.11+ virtual environment, then install Chroma:
+
+    python -m pip install chromadb
+
+The existing RAG starter uses the LangChain adapter package:
+
+    python -m pip install langchain-chroma langchain-ollama
+
+LEVEL 1: BEGINNER
+-----------------
+Example 1: create a persistent client and collection.
+
+    # Import Chroma's client.
+    import chromadb
+
+    # Persist the database in this folder between program runs.
+    client = chromadb.PersistentClient(path="./chroma_store")
+    # Create the collection if needed, or open it if it already exists.
+    collection = client.get_or_create_collection(name="notes")
+
+Example 2: add records and query by text.
+
+    # Add unique IDs, text, and source metadata.
+    collection.add(
+        ids=["note-1", "note-2"],
+        documents=[
+            "The library closes at 6 PM.",
+            "The cafe opens at 8 AM.",
+        ],
+        metadatas=[
+            {"source": "hours.txt", "kind": "library"},
+            {"source": "hours.txt", "kind": "cafe"},
+        ],
+    )
+    # Chroma embeds the query and returns the nearest stored documents.
+    results = collection.query(query_texts=["When does the library close?"], n_results=2)
+    # Print the matching document strings.
+    print(results["documents"])
+
+Example 3: filter by metadata.
+
+    # Return records whose metadata field kind equals library.
+    filtered = collection.query(
+        query_texts=["opening hours"],
+        where={"kind": "library"},
+        n_results=3,
+    )
+    # Print the IDs of records that matched.
+    print(filtered["ids"])
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn collection naming, metadata design, update/upsert/delete, batching,
+filter syntax, distance metrics, persistence, and embedding functions.
+IDs must be stable and unique within a collection. Metadata filters narrow
+search to the right source, tenant, date, or document type.
+
+Useful operations:
+
+    # Inspect records in a collection.
+    collection.get(limit=10)
+    # Update an existing record or create it if its ID is new.
+    collection.upsert(
+        ids=["note-1"],
+        documents=["The library closes at 7 PM."],
+        metadatas=[{"source": "hours.txt", "kind": "library"}],
+    )
+    # Delete one record by its ID.
+    collection.delete(ids=["note-2"])
+
+LEVEL 3: ADVANCED
+-----------------
+Study custom embedding functions, batch sizing, index configuration,
+filter planning, backups, migrations, multi-tenant access, concurrency,
+and integration with PostgreSQL or cloud storage. Benchmark recall and
+latency using your own query set.
+
+Do not compare distances from different embedding models as if they were
+the same scale. Re-embed a collection when changing its embedding model.
+
+LEVEL 4: EXPERT
+---------------
+Expert vector search includes capacity planning, durability, index rebuilds,
+data deletion guarantees, authorization, observability, and failure recovery.
+Plan a backup and restore test before relying on a local persistent index.
+
+Practice projects:
+  1. Store a few documents and show the top matches for five questions.
+  2. Add metadata filters and verify one category cannot retrieve another.
+  3. Rebuild the index from source files and compare retrieval before/after.

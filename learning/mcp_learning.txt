@@ -1,0 +1,123 @@
+MODEL CONTEXT PROTOCOL (MCP) LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+=============================================
+
+WHAT MCP IS
+-----------
+The Model Context Protocol is a standard way for an AI application (the host)
+to connect to servers that expose tools and context. An MCP server can expose
+tools (actions), resources (readable context), and prompts (reusable prompt
+templates). The protocol defines how clients discover and call these
+capabilities; it does not make an unsafe tool safe by itself.
+
+Common transports include:
+  - stdio: a host launches a local server process and exchanges messages.
+  - Streamable HTTP: a server communicates over HTTP and can be remote.
+
+The examples below use the official Python SDK's MCPServer API. Python 3.11+
+is required by the current SDK used in the starter project.
+
+INSTALLATION
+------------
+Create and activate a virtual environment, then install the SDK:
+
+    python -m pip install mcp
+
+LEVEL 1: BEGINNER
+-----------------
+Example 1: expose a small, read-only tool over stdio.
+
+    # MCPServer provides the server and tool-registration decorator.
+    from mcp.server import MCPServer
+
+    # Give the server a name that an MCP host can display.
+    server = MCPServer("Learning Tools")
+
+    # The type hints describe the input and result to MCP clients.
+    @server.tool()
+    def add_numbers(left: int, right: int) -> int:
+        """Add two whole numbers and return their sum."""
+        return left + right
+
+    # With stdio, an MCP host launches this process and talks over its pipes.
+    if __name__ == "__main__":
+        server.run(transport="stdio")
+
+Example 2: expose a tool over local Streamable HTTP.
+
+    # Use the same MCPServer class and decorate a Python function as a tool.
+    from mcp.server import MCPServer
+
+    # Create a named server instance.
+    server = MCPServer("Text Tools")
+
+    # Keep tool inputs narrow and validate them before use.
+    @server.tool()
+    def count_words(text: str) -> int:
+        """Count whitespace-separated words in a short text."""
+        if len(text) > 5000:
+            raise ValueError("Text must be 5000 characters or fewer.")
+        return len(text.split())
+
+    # Bind only to loopback for local development.
+    if __name__ == "__main__":
+        server.run(transport="streamable-http", host="127.0.0.1", port=8001)
+
+Example 3: run a tool that calls the repository's local RAG graph.
+
+    # The server class registers a Python function as an MCP tool.
+    from mcp.server import MCPServer
+    # Import the shared question-answering graph from the local project.
+    from app import rag
+
+    # Create an MCP server for the document assistant.
+    server = MCPServer("Local Documents")
+
+    # Hosts can discover and call this tool with a question string.
+    @server.tool()
+    def ask_documents(question: str) -> str:
+        """Answer a question using the locally indexed documents."""
+        # Reject empty input before invoking retrieval or a model.
+        if not question.strip():
+            raise ValueError("Question cannot be blank.")
+        # Run the graph with the validated question.
+        result = rag.invoke({"question": question.strip()})
+        # Return the graph's answer to the MCP client.
+        return result["answer"]
+
+    # Start a local HTTP endpoint for an MCP-compatible host.
+    if __name__ == "__main__":
+        server.run(transport="streamable-http", host="127.0.0.1", port=8001)
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn tool schemas, JSON-compatible values, error reporting, resources,
+prompts, stdio configuration, Streamable HTTP, and client/server lifecycle.
+Keep tool descriptions clear so the host can select the right capability.
+
+LEVEL 3: ADVANCED
+-----------------
+Study authentication, transport security, authorization, timeouts, rate
+limits, audit logs, version compatibility, and safe handling of tool results.
+Treat tool output and resource contents as untrusted input. Validate all
+arguments in the server even when the host also validates them.
+
+LEVEL 4: EXPERT
+---------------
+Expert MCP deployments include least-privilege tool design, user consent,
+secret management, secure remote transport, capability review, observability,
+and isolation between users or tenants.
+
+Security checklist:
+  - Expose only necessary actions and data.
+  - Require confirmation for consequential or irreversible actions.
+  - Do not bind a development server to all network interfaces by default.
+  - Never put credentials in tool descriptions, source code, or logs.
+  - Apply server-side authorization on every call.
+  - Consider prompt injection in documents and returned tool content.
+
+PRACTICE
+--------
+1. Run the stdio server from a compatible MCP host and call add_numbers.
+2. Add a tool that validates inputs and returns a useful error.
+3. Connect an MCP host to a local Streamable HTTP server over loopback.

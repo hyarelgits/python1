@@ -1,0 +1,159 @@
+MACHINE LEARNING LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+==============================================
+
+WHAT MACHINE LEARNING IS
+------------------------
+Machine learning (ML) uses examples to fit a model that can make predictions
+or discover patterns. A feature is an input column; a label/target is the
+answer the model learns to predict. Training fits model parameters. Evaluation
+checks performance on data not used to fit the model.
+
+Common kinds of ML:
+  - Supervised: learn from input examples with known labels.
+  - Unsupervised: find structure without supplied labels.
+  - Semi-supervised: combine a small labeled set with a larger unlabeled set.
+  - Self-supervised: create training targets from the input itself.
+  - Reinforcement learning: learn actions using rewards from an environment.
+
+SETUP COMMANDS
+--------------
+Use Python 3.11+ and a virtual environment. Install core learning packages:
+
+    python3 -m venv .venv
+    source .venv/bin/activate
+    python -m pip install --upgrade pip
+    python -m pip install numpy pandas scikit-learn matplotlib jupyter
+
+LEVEL 1: BEGINNER
+-----------------
+Learn arrays and tables, labels versus features, train/test splitting,
+regression, classification, clustering, and basic metrics. Never train and
+evaluate on the same examples: that gives an overly optimistic score.
+
+Example 1: regression learns a numeric value from numeric features.
+
+    # make_regression creates a reproducible toy numeric dataset.
+    from sklearn.datasets import make_regression
+    # train_test_split keeps a test set separate from training.
+    from sklearn.model_selection import train_test_split
+    # LinearRegression fits a linear relationship.
+    from sklearn.linear_model import LinearRegression
+    # mean_squared_error measures average squared prediction error.
+    from sklearn.metrics import mean_squared_error
+
+    # X contains features; y contains the numeric target.
+    X, y = make_regression(n_samples=100, n_features=2, noise=10, random_state=7)
+    # Reserve 20 percent of rows to evaluate after training.
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=7
+    )
+    # Fit using only the training rows.
+    model = LinearRegression().fit(X_train, y_train)
+    # Predict unseen target values and measure the error.
+    predictions = model.predict(X_test)
+    print("MSE:", mean_squared_error(y_test, predictions))
+
+Example 2: classification predicts a category.
+
+    # Load a small labeled flower dataset.
+    from sklearn.datasets import load_iris
+    # Split the data before training.
+    from sklearn.model_selection import train_test_split
+    # Use a decision-tree ensemble classifier.
+    from sklearn.ensemble import RandomForestClassifier
+    # Accuracy is the fraction of labels predicted correctly.
+    from sklearn.metrics import accuracy_score
+
+    # X contains flower measurements; y contains flower class numbers.
+    X, y = load_iris(return_X_y=True)
+    # Keep training and test rows separate, preserving class proportions.
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, stratify=y, random_state=7
+    )
+    # Train the classifier.
+    model = RandomForestClassifier(n_estimators=100, random_state=7).fit(
+        X_train, y_train
+    )
+    # Compare predictions against test labels.
+    print("Accuracy:", accuracy_score(y_test, model.predict(X_test)))
+
+Example 3: clustering groups data without known labels.
+
+    # make_blobs creates groups of sample points.
+    from sklearn.datasets import make_blobs
+    # KMeans assigns each point to a nearest cluster center.
+    from sklearn.cluster import KMeans
+
+    # X has coordinates; true_groups is only for understanding this toy data.
+    X, true_groups = make_blobs(n_samples=100, centers=3, random_state=7)
+    # Fit three clusters without giving the model the labels.
+    groups = KMeans(n_clusters=3, n_init="auto", random_state=7).fit_predict(X)
+    # Print the first predicted cluster IDs.
+    print(groups[:10])
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn preprocessing, missing values, categorical encoding, feature scaling,
+pipelines, cross-validation, confusion matrices, precision/recall, ROC-AUC,
+class imbalance, and hyperparameter search.
+
+Use a pipeline so transformations are fitted only on training folds:
+
+    # Load a dataset so this example can run on its own.
+    from sklearn.datasets import load_iris
+    X, y = load_iris(return_X_y=True)
+    # Pipeline keeps preprocessing and model fitting together.
+    from sklearn.pipeline import make_pipeline
+    # LogisticRegression is the classifier at the end of this pipeline.
+    from sklearn.linear_model import LogisticRegression
+    # StandardScaler rescales numeric features.
+    from sklearn.preprocessing import StandardScaler
+    # Cross-validation estimates performance across multiple data splits.
+    from sklearn.model_selection import cross_val_score
+
+    # Build a repeatable preprocessing-plus-model pipeline.
+    pipeline = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
+    # Estimate accuracy across five validation folds.
+    scores = cross_val_score(pipeline, X, y, cv=5, scoring="accuracy")
+    print("Fold scores:", scores)
+    print("Mean score:", scores.mean())
+
+LEVEL 3: ADVANCED
+-----------------
+Study calibration, feature selection, robust validation, data drift, model
+interpretability, privacy, fairness, uncertainty, and experiment tracking.
+Use nested cross-validation when tuning and estimating generalization on small
+datasets. Define a metric that reflects the real cost of false positives and
+false negatives rather than selecting accuracy by default.
+
+Useful experiments:
+  1. Compare a simple baseline with a tuned pipeline.
+  2. Plot learning curves to identify high bias or high variance.
+  3. Measure subgroup metrics to look for uneven error rates.
+
+LEVEL 4: EXPERT
+---------------
+Expert ML includes reliable data and feature pipelines, reproducible
+experiments, scalable training/inference, monitoring, model governance,
+causal reasoning, and responsible retirement of models.
+
+Know the difference between:
+  - Data leakage: information unavailable at prediction time enters training.
+  - Distribution shift: future inputs differ from training inputs.
+  - Correlation: variables move together; this alone does not prove causation.
+  - Offline metrics: test-set scores; these may not predict user impact.
+
+Expert project checklist:
+  - Version datasets, code, configuration, and model artifacts.
+  - Record seeds, library versions, split strategy, and metrics.
+  - Benchmark latency and memory, not only predictive quality.
+  - Monitor data quality and performance after deployment.
+  - Protect personal data and review fairness and safety impacts.
+
+NEXT PROJECTS
+-------------
+1. Predict a numeric house-price target and explain the error metric.
+2. Classify flowers or messages and report precision, recall, and confusion
+   matrix.
+3. Cluster customer-like toy data and explain why clusters are not labels.

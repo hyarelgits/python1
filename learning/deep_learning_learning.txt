@@ -1,0 +1,124 @@
+DEEP LEARNING LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+==============================================
+
+WHAT DEEP LEARNING IS
+---------------------
+Deep learning (DL) is a family of ML methods using neural networks with
+multiple layers. A tensor is a multidimensional array. A network transforms
+input tensors through layers. A loss function measures error; backpropagation
+computes gradients; an optimizer updates parameters to reduce the loss.
+
+This file uses PyTorch. Use Python 3.11+ and choose the correct CPU or GPU
+installation command from the official PyTorch installation selector. A
+simple CPU installation is:
+
+    python -m pip install torch torchvision torchaudio
+
+LEVEL 1: BEGINNER
+-----------------
+Learn tensors, tensor shapes, datasets, batches, parameters, activations,
+losses, optimizers, epochs, and train/validation/test splits. Always inspect
+tensor shapes; shape errors are a common first problem.
+
+Example 1: create and calculate with tensors.
+
+    # Import PyTorch.
+    import torch
+
+    # Create a two-row, three-column tensor of values.
+    values = torch.tensor([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+    # Print shape to inspect the two dimensions.
+    print(values.shape)
+    # Calculate the mean value.
+    print(values.mean())
+
+Example 2: define a tiny neural network.
+
+    # Import PyTorch and its neural-network layers.
+    import torch
+    # nn contains neural-network layers and loss functions.
+    from torch import nn
+
+    # Define a model that maps 4 input values to 3 output values.
+    model = nn.Sequential(
+        nn.Linear(4, 8),  # Learn an affine transform from 4 to 8 values.
+        nn.ReLU(),        # Add a nonlinear activation.
+        nn.Linear(8, 3),  # Produce 3 output scores.
+    )
+    # Run a batch of 2 examples; shape is batch_size by input_features.
+    sample_batch = torch.randn(2, 4)
+    print(model(sample_batch).shape)
+
+Example 3: one training step.
+
+    # Import PyTorch and its neural-network layers for this standalone example.
+    import torch
+    from torch import nn
+    # Define a small model that maps 4 input values to 3 class scores.
+    model = nn.Sequential(nn.Linear(4, 8), nn.ReLU(), nn.Linear(8, 3))
+    # Create one labeled training batch with two examples and three classes.
+    inputs = torch.randn(2, 4)
+    labels = torch.tensor([0, 2])
+    # CrossEntropyLoss is commonly used for multi-class classification.
+    loss_function = nn.CrossEntropyLoss()
+    # Adam updates model parameters using computed gradients.
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    # Clear gradients left by a previous training step.
+    optimizer.zero_grad()
+    # Calculate class scores and the loss for this batch.
+    loss = loss_function(model(inputs), labels)
+    # Compute gradients by backpropagation.
+    loss.backward()
+    # Update the model parameters.
+    optimizer.step()
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn data loaders, mini-batches, regularization, dropout, batch
+normalization, learning-rate schedules, checkpointing, transfer learning,
+convolutional networks, and sequence models.
+
+Training loop checklist:
+  1. Put the model in training mode with model.train().
+  2. For each batch, move input and labels to the selected device.
+  3. Clear old gradients, run the model, calculate loss, backpropagate, update.
+  4. Evaluate with model.eval() and torch.inference_mode().
+  5. Save the best validation checkpoint and evaluate the test set once.
+
+LEVEL 3: ADVANCED
+-----------------
+Study attention and transformers, mixed precision, gradient accumulation,
+distributed data parallel, data augmentation, contrastive learning, custom
+losses, and experiment reproducibility.
+
+Useful tools and commands:
+
+    python -m pip install tensorboard
+    python -m pip install torchmetrics
+    python -c "import torch; print(torch.cuda.is_available())"
+
+The last command checks whether this PyTorch installation can access CUDA. A
+False result is normal on a CPU-only VM.
+
+LEVEL 4: EXPERT
+---------------
+Expert DL work includes numerical stability, memory/throughput profiling,
+distributed training, model compression, serving, monitoring, safety, and
+reproducible research.
+
+Advanced questions to answer in a project:
+  - Is the model overfitting, underfitting, or limited by data quality?
+  - Do gradients or activations become extremely large or close to zero?
+  - Is training compute-bound, data-loading-bound, or memory-bound?
+  - Does the model work on the intended hardware and real data distribution?
+  - Can you reproduce the run from a saved configuration and checkpoint?
+
+SUGGESTED PROJECTS
+------------------
+1. Learn tensors and train a small classifier on generated sample data.
+2. Train a CNN on a small image dataset and inspect mistakes.
+3. Fine-tune a pretrained model, measure latency, and document limitations.
+
+Do not treat a high training score as proof of real-world performance. Use
+separate validation and test data and document the experiment.

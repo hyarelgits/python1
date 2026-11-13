@@ -1,0 +1,115 @@
+LANGCHAIN LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+==============================================
+
+WHAT LANGCHAIN DOES
+-------------------
+LangChain provides components and integrations for language-model
+applications: chat models, prompts, output parsers, documents, splitters,
+embeddings, retrievers, and tools. LangChain is not itself a language model.
+For multi-step stateful workflows, learn LangGraph as well.
+
+INSTALLATION
+------------
+In a Python 3.11+ virtual environment:
+
+    python -m pip install langchain langchain-ollama langchain-chroma langchain-text-splitters
+
+LEVEL 1: BEGINNER
+-----------------
+Example 1: make a prompt-model-output pipeline.
+
+    # ChatOllama calls the local Ollama chat model.
+    from langchain_ollama import ChatOllama
+    # ChatPromptTemplate creates a structured prompt.
+    from langchain_core.prompts import ChatPromptTemplate
+    # StrOutputParser converts a model message into plain text.
+    from langchain_core.output_parsers import StrOutputParser
+
+    # Create a prompt with one variable named topic.
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "Explain technical ideas in simple terms."),
+        ("human", "What is {topic}?"),
+    ])
+    # Create a local chat model; pull this model with Ollama first.
+    model = ChatOllama(model="llama3.2:3b", temperature=0)
+    # The pipe operator composes prompt, model, and parser steps.
+    chain = prompt | model | StrOutputParser()
+    # Supply the variable and run the complete pipeline.
+    print(chain.invoke({"topic": "a vector database"}))
+
+Example 2: split documents and retain metadata.
+
+    # Document stores text and metadata together.
+    from langchain_core.documents import Document
+    # RecursiveCharacterTextSplitter creates overlapping chunks.
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+    # Make a source document and label where it came from.
+    source = Document(
+        page_content="A longer piece of text goes here.",
+        metadata={"source": "notes.txt"},
+    )
+    # Choose chunk length and overlap in characters.
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=80)
+    # Produce smaller Document objects with inherited metadata.
+    chunks = splitter.split_documents([source])
+
+Example 3: embed and retrieve with Chroma.
+
+    # Chroma stores embedded documents persistently.
+    from langchain_chroma import Chroma
+    # OllamaEmbeddings uses a local embedding model.
+    from langchain_ollama import OllamaEmbeddings
+
+    # Create a vector store and add the split documents.
+    store = Chroma.from_documents(
+        documents=chunks,
+        embedding=OllamaEmbeddings(model="nomic-embed-text"),
+        collection_name="langchain_lessons",
+        persist_directory="./chroma_db",
+    )
+    # Convert a question to a vector and retrieve nearby documents.
+    matches = store.similarity_search("What is in the notes?", k=3)
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn prompt variables, structured output, callbacks, streaming, batching,
+document loaders, metadata filters, vector-store retrievers, tool calling,
+and custom Runnable components.
+
+Convert a vector store into a retriever:
+
+    # Ask the vector store for the three most similar documents per query.
+    retriever = store.as_retriever(search_kwargs={"k": 3})
+    # Retrieve documents without calling a chat model.
+    relevant_documents = retriever.invoke("Find the notes about embeddings.")
+
+LEVEL 3: ADVANCED
+-----------------
+Study retry and fallback behavior, streaming, tracing, prompt evaluation,
+model/provider abstraction, async calls, caching, batching, and security.
+Keep prompt instructions separate from untrusted retrieved content.
+
+Debug components independently:
+  1. Print the rendered prompt before calling the model.
+  2. Inspect retrieved documents and their source metadata.
+  3. Test the model and parser with a fixed input.
+  4. Measure latency and token use for each stage.
+
+LEVEL 4: EXPERT
+---------------
+Expert application design separates data ingestion, retrieval, model
+generation, evaluation, and serving. Pin dependency ranges, observe failures,
+test upgrades, manage secrets, and set request and output limits.
+
+Know when to use each tool:
+  - LangChain: reusable integrations and composable model/data components.
+  - LangGraph: stateful workflows, cycles, conditional routing, and checkpoints.
+  - MCP: standard protocol for exposing tools/data to external AI clients.
+
+PRACTICE
+--------
+1. Change the prompt and compare answers at different temperatures.
+2. Inspect retrieval results before adding a generation step.
+3. Add source citations and tests for questions with no supporting document.

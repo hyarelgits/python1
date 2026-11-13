@@ -1,0 +1,144 @@
+POSTGRESQL LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+==============================================
+
+WHAT POSTGRESQL IS
+------------------
+PostgreSQL is a relational database. It stores structured data in tables with
+columns and rows. SQL defines, inserts, reads, changes, and deletes data.
+Primary keys uniquely identify rows; foreign keys connect related tables.
+Constraints protect data quality. Transactions group changes reliably.
+
+INSTALL ON UBUNTU
+-----------------
+These commands install the PostgreSQL server and command-line client:
+
+    sudo apt update
+    sudo apt install -y postgresql postgresql-contrib
+    sudo systemctl enable --now postgresql
+    sudo systemctl status postgresql --no-pager
+
+Open the administrative psql shell:
+
+    sudo -u postgres psql
+
+LEVEL 1: BEGINNER
+-----------------
+Example 1: create a database role and database in psql.
+
+    -- Create an account that can log in; set its password interactively next.
+    CREATE ROLE rag_user LOGIN;
+    -- psql asks for the password without putting it in shell history.
+    \password rag_user
+    -- Create a database owned by this application role.
+    CREATE DATABASE rag_demo OWNER rag_user;
+    -- Leave the PostgreSQL prompt.
+    \q
+
+Example 2: create related tables with constraints.
+
+    -- Create a customer table with a unique primary key and required email.
+    CREATE TABLE customers (
+        customer_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        full_name TEXT NOT NULL
+    );
+    -- Each order refers to an existing customer.
+    CREATE TABLE orders (
+        order_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        customer_id BIGINT NOT NULL REFERENCES customers(customer_id),
+        total NUMERIC(10, 2) NOT NULL CHECK (total >= 0),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+Example 3: insert and query rows.
+
+    -- Insert a customer; return the generated primary key.
+    INSERT INTO customers (email, full_name)
+    VALUES ('learner@example.test', 'Example Learner')
+    RETURNING customer_id;
+    -- Read the customer by its unique email.
+    SELECT customer_id, full_name
+    FROM customers
+    WHERE email = 'learner@example.test';
+
+LEVEL 2: INTERMEDIATE
+---------------------
+Learn joins, grouping, aggregate functions, subqueries, common table
+expressions, views, indexes, transactions, and query plans.
+
+    -- Join each order to its customer, then total orders per customer.
+    SELECT c.email, COUNT(o.order_id) AS order_count, SUM(o.total) AS revenue
+    FROM customers AS c
+    LEFT JOIN orders AS o ON o.customer_id = c.customer_id
+    GROUP BY c.customer_id, c.email
+    ORDER BY revenue DESC NULLS LAST;
+
+    -- Index a frequently filtered column; indexes speed reads but cost storage
+    -- and add work to inserts/updates.
+    CREATE INDEX orders_customer_id_idx ON orders(customer_id);
+
+    -- EXPLAIN shows the planner's chosen query plan.
+    EXPLAIN SELECT * FROM orders WHERE customer_id = 1;
+
+Use transactions for related changes:
+
+    BEGIN;
+    UPDATE orders SET total = 25.00 WHERE order_id = 1;
+    COMMIT;
+
+If a transaction needs to be abandoned before COMMIT, use ROLLBACK.
+
+LEVEL 3: ADVANCED
+-----------------
+Study window functions, isolation levels, row and table locks, partitioning,
+materialized views, connection pooling, query tuning, migrations, replication,
+and backup/restore. Use EXPLAIN (ANALYZE, BUFFERS) carefully on real queries;
+ANALYZE executes the query.
+
+LEVEL 4: EXPERT
+---------------
+Expert database work includes schema evolution without downtime, capacity
+planning, workload isolation, access-control review, disaster recovery,
+replication design, vacuum and bloat management, and incident response.
+
+Safety principles:
+  - Use parameterized SQL; never join untrusted input into a query string.
+  - Use least-privilege roles for applications.
+  - Keep credentials out of source files and Git.
+  - Back up data and test restoring it.
+  - Avoid opening PostgreSQL's port to the public internet.
+
+PYTHON EXAMPLE WITH psycopg 3
+-----------------------------
+Install the driver inside the virtual environment:
+
+    python -m pip install "psycopg[binary]"
+
+The following code expects DATABASE_URL to be set in the environment. Replace
+the placeholder value locally; do not commit a real password.
+
+    # os reads environment variables without hardcoding credentials.
+    import os
+    # psycopg is the modern PostgreSQL driver for Python.
+    import psycopg
+
+    # Read the connection string from the environment.
+    database_url = os.environ["DATABASE_URL"]
+    # Open a connection; the context manager commits on success and closes.
+    with psycopg.connect(database_url) as connection:
+        # Use a cursor to execute parameterized SQL.
+        with connection.cursor() as cursor:
+            # %s is a value placeholder; user input is passed separately.
+            cursor.execute(
+                "SELECT full_name FROM customers WHERE email = %s",
+                ("learner@example.test",),
+            )
+            # Fetch one matching row, or None if there is no match.
+            print(cursor.fetchone())
+
+Set a local connection string in the shell, not in a tracked file:
+
+    export DATABASE_URL='postgresql://rag_user:YOUR_PASSWORD@127.0.0.1:5432/rag_demo'
+
+For production, use a secret manager or protected environment configuration.

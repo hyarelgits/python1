@@ -1,0 +1,291 @@
+PYTHON LEARNING PATH
+Beginner -> Intermediate -> Advanced -> Expert
+==============================================
+
+HOW TO USE THIS FILE
+--------------------
+Learn one level at a time. Type the examples into your own .py file, run them,
+change the values, and predict the result before executing. The comments above
+the code explain what each line or group does.
+
+Python is a general-purpose programming language. The Python interpreter reads
+and executes Python instructions. Python is commonly used for automation,
+websites, data analysis, machine learning, and artificial intelligence.
+
+Commands to check Python and run a script:
+
+    python3 --version
+    python3 hello.py
+    python3 -m venv .venv
+    source .venv/bin/activate
+    python -m pip install PACKAGE_NAME
+
+On Windows, activate the environment with:
+
+    .venv\Scripts\activate
+
+----------------------------------------------------------------------
+LEVEL 1: BEGINNER
+----------------------------------------------------------------------
+
+1. VARIABLES AND DATA TYPES
+---------------------------
+A variable is a name that refers to a value. A data type describes what kind
+of value it is and which operations make sense for it. For example, numbers
+can be added, strings can be joined, and a dictionary stores key/value pairs.
+Use type(value) to inspect a value's type and isinstance(value, TYPE) to test
+whether it belongs to a type.
+
+INTEGER (int): whole numbers; use for counts, indexes, and quantities.
+
+    # Example 1: store the number of books.
+    book_count = 4
+    # Example 2: add two whole numbers.
+    total_items = 7 + 3
+    # Example 3: convert numeric text into an integer.
+    page_number = int("12")
+
+DECIMAL (float): approximate decimal numbers; use for measurements and many
+scientific calculations. Decimal floating-point values can have rounding.
+
+    # Example 1: store a temperature.
+    temperature = 21.5
+    # Example 2: divide two numbers and get a decimal result.
+    average = 9 / 2
+    # Example 3: convert numeric text into a float.
+    price = float("3.75")
+
+TEXT (str): a sequence of characters; use for names, messages, and identifiers.
+
+    # Example 1: define a string with single quotes.
+    first_name = 'Amina'
+    # Example 2: define a string with double quotes.
+    message = "Welcome to Python"
+    # Example 3: build text with a formatted string.
+    greeting = f"Hello, {first_name}!"
+
+BOOLEAN (bool): True or False; use for conditions and yes/no state.
+
+    # Example 1: compare two numbers.
+    is_adult = 20 >= 18
+    # Example 2: check whether a name is not empty.
+    has_name = bool("Amina")
+    # Example 3: combine two conditions.
+    can_enter = is_adult and has_name
+
+NO VALUE (NoneType): None means no value is currently available. It is not the
+same as 0, False, or an empty string.
+
+    # Example 1: use None before a value is known.
+    selected_user = None
+    # Example 2: check for missing data.
+    if selected_user is None:
+        print("No user selected")
+    # Example 3: a function can return None when it has no result.
+    def find_user(user_id):
+        return None
+
+LIST (list): an ordered, changeable collection; use for items that may be
+added, removed, or updated.
+
+    # Example 1: create a list.
+    colors = ["red", "green", "blue"]
+    # Example 2: read the first item; indexes start at zero.
+    first_color = colors[0]
+    # Example 3: add an item to the end.
+    colors.append("yellow")
+
+TUPLE (tuple): an ordered, unchangeable collection; use for a fixed group of
+related values.
+
+    # Example 1: store a fixed screen size.
+    screen_size = (1920, 1080)
+    # Example 2: unpack the tuple into two variables.
+    width, height = screen_size
+    # Example 3: return a pair of values from a function.
+    def coordinates():
+        return (10, 20)
+
+SET (set): a collection of unique values; use for removing duplicates and
+fast membership checks. Sets do not preserve a meaningful item order.
+
+    # Example 1: duplicate values are stored once.
+    unique_numbers = {2, 2, 4, 6}
+    # Example 2: add a value.
+    unique_numbers.add(8)
+    # Example 3: check membership.
+    has_four = 4 in unique_numbers
+
+DICTIONARY (dict): a changeable key/value mapping; use for records and lookups.
+
+    # Example 1: create a dictionary.
+    person = {"name": "Amina", "age": 20}
+    # Example 2: read a value by key.
+    person_name = person["name"]
+    # Example 3: add or replace a value.
+    person["city"] = "Lahore"
+
+2. OPERATORS, CONDITIONS, AND LOOPS
+----------------------------------
+Operators calculate or compare values. A condition chooses which code runs.
+A loop repeats code for each item or while a condition remains true.
+
+    # Example 1: arithmetic operators calculate a total.
+    subtotal = 10 * 3
+    # Example 2: if/elif/else selects one matching branch.
+    if subtotal > 20:
+        price_label = "large"
+    elif subtotal > 0:
+        price_label = "small"
+    else:
+        price_label = "zero"
+    # Example 3: for visits each item; range(3) produces 0, 1, and 2.
+    for number in range(3):
+        print(number)
+
+3. FUNCTIONS
+------------
+A function is a reusable named block. Parameters receive inputs; return sends
+a result back to the caller.
+
+    # Define a function with two parameters and a return value.
+    def add_tax(price: float, rate: float = 0.1) -> float:
+        # Calculate and return the price including tax.
+        return price * (1 + rate)
+
+    # Call the function and save the returned value.
+    final_price = add_tax(100)
+    # Display the result.
+    print(final_price)
+
+----------------------------------------------------------------------
+LEVEL 2: INTERMEDIATE
+----------------------------------------------------------------------
+
+Learn modules and imports, reading/writing files, exceptions, comprehensions,
+classes, dataclasses, type hints, and automated tests.
+
+    # pathlib provides safer path handling than manually joining strings.
+    from pathlib import Path
+
+    # Create a path to a text file in the current folder.
+    notes_path = Path("notes.txt")
+    # Write UTF-8 text to the file.
+    notes_path.write_text("Learn Python one step at a time.\n", encoding="utf-8")
+    # Read the file and handle a missing-file error.
+    try:
+        notes = notes_path.read_text(encoding="utf-8")
+    except OSError as error:
+        print(f"Could not read the file: {error}")
+    else:
+        print(notes)
+
+List comprehensions create a list from an iterable:
+
+    # Keep only even numbers and double each kept number.
+    doubled_evens = [number * 2 for number in range(10) if number % 2 == 0]
+
+Classes group data and behavior. Use dataclasses for simple data containers:
+
+    # Import dataclass to generate common methods automatically.
+    from dataclasses import dataclass
+
+    # Declare the fields and their types.
+    @dataclass
+    class Product:
+        name: str
+        price: float
+
+    # Create an instance of the class.
+    product = Product(name="Notebook", price=4.5)
+
+Practice writing tests with pytest:
+
+    python -m pip install pytest
+    python -m pytest
+
+----------------------------------------------------------------------
+LEVEL 3: ADVANCED
+----------------------------------------------------------------------
+
+Study iterators, generators, decorators, context managers, async/await,
+threading versus multiprocessing, profiling, packaging, and static typing.
+
+    # A generator yields one value at a time instead of building a full list.
+    def read_chunks(items, size):
+        for start in range(0, len(items), size):
+            yield items[start:start + size]
+
+    # A decorator wraps a function to add behavior.
+    from functools import wraps
+
+    def announce(function):
+        @wraps(function)
+        def wrapper(*args, **kwargs):
+            print("Starting function")
+            return function(*args, **kwargs)
+        return wrapper
+
+    @announce
+    def greet(name: str) -> str:
+        return f"Hello, {name}"
+
+Use async/await for asynchronous I/O, not automatically for CPU-heavy work:
+
+    # asyncio runs asynchronous functions.
+    import asyncio
+
+    # async def declares a coroutine.
+    async def main():
+        # await pauses this coroutine while the operation completes.
+        await asyncio.sleep(0.1)
+        print("Finished waiting")
+
+    # Start the event loop for this coroutine.
+    asyncio.run(main())
+
+Use cProfile to find slow parts before optimizing:
+
+    python -m cProfile -s cumulative my_script.py
+
+----------------------------------------------------------------------
+LEVEL 4: EXPERT
+----------------------------------------------------------------------
+
+Expert-level work includes designing reliable packages and services, reviewing
+security boundaries, measuring memory and latency, understanding the GIL and
+interpreter behavior, and maintaining compatibility over time.
+
+Study these subjects through projects:
+  - Architecture: clear modules, stable interfaces, dependency injection.
+  - Performance: profiling, algorithmic complexity, memory allocation.
+  - Concurrency: asyncio for I/O, processes for CPU work, thread-safety.
+  - Reliability: testing, observability, graceful shutdown, retries and limits.
+  - Security: input validation, safe serialization, secrets management.
+  - Packaging: pyproject.toml, versioning, wheels, release automation.
+  - Typing: protocols, generics, static checkers, public API contracts.
+  - CPython: bytecode, reference counting, garbage collection, GIL tradeoffs.
+
+Expert example: a protocol specifies behavior without requiring inheritance.
+
+    # Protocol describes the method an object must provide.
+    from typing import Protocol
+
+    class HasArea(Protocol):
+        def area(self) -> float:
+            ...
+
+    # This function accepts any object that follows the protocol.
+    def print_area(shape: HasArea) -> None:
+        print(shape.area())
+
+----------------------------------------------------------------------
+SUGGESTED PRACTICE PROJECTS
+----------------------------------------------------------------------
+1. Beginner: command-line expense calculator with input validation.
+2. Intermediate: read a CSV file, summarize it, and test the functions.
+3. Advanced: build an async API client with retries and structured logging.
+4. Expert: package a typed library with CI, documentation, tests, and releases.
+
+For every project, write down the expected input, output, error cases, and tests
+before adding features.
