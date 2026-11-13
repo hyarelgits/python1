@@ -1,0 +1,108 @@
+ARGO CD (ARGOCD) LEARNING AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+============================================
+
+GOAL
+----
+Argo CD is a declarative GitOps continuous-delivery tool for Kubernetes.
+It compares the desired manifests in Git with live cluster resources and
+reports synchronization and health. Git is the reviewed source of desired
+state; Argo CD does not remove the need for application testing, access
+controls, or runtime monitoring.
+
+LEARNING PATH
+-------------
+Basic:
+  - GitOps, Application, source repository, destination cluster/namespace.
+  - Synced/OutOfSync, Healthy/Degraded, refresh, sync, history, rollback.
+Intermediate:
+  - Auto-sync, prune, self-heal, Projects, RBAC, Helm/Kustomize sources,
+    sync options, hooks, sync waves, and ApplicationSet.
+Advanced:
+  - Multi-cluster design, secret management, repo credentials, diff
+    customization, resource tracking, HA, and disaster recovery.
+Expert:
+  - GitOps governance, tenancy boundaries, progressive delivery, policy,
+    drift response, auditability, and platform-scale reconciliation.
+
+CORE WORKFLOW
+-------------
+    # Inspect the Argo CD CLI version and server connectivity.
+    argocd version
+    # List applications and their sync/health states.
+    argocd app list
+    # Inspect one application's source, destination, and conditions.
+    argocd app get APP_NAME
+    # Preview the resources that differ from Git.
+    argocd app diff APP_NAME
+    # Request a controlled synchronization.
+    argocd app sync APP_NAME
+
+REAL-WORLD INCIDENT: APPLICATION IS OUT OF SYNC
+------------------------------------------------
+Inspect the diff and application events, then identify whether Git changed,
+someone edited the cluster, a controller/default altered fields, or rendering
+uses unexpected values. Correct the source or documented diff policy. Avoid
+blindly syncing or enabling self-heal before understanding whether the live
+change was an emergency mitigation.
+
+REAL-WORLD INCIDENT: BAD RELEASE SYNCHRONIZED
+---------------------------------------------
+Stop automatic promotion, revert the Git commit to the last known-good
+manifest, and allow the controller to reconcile. Verify workload health and
+data compatibility. Preserve the incident diff and revise tests/policies.
+GitOps rollback normally means reverting desired state, not changing live
+objects manually and leaving Git inconsistent.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is Argo CD? A: A Kubernetes GitOps controller that reconciles cluster resources from declarative Git sources.
+02. Q: What is GitOps? A: An operating model where version-controlled desired state is reviewed and reconciled into environments.
+03. Q: What is an Argo CD Application? A: A custom resource describing a source, destination, and sync behavior for a workload.
+04. Q: What does Synced mean? A: The live resources match the rendered desired state according to Argo CD comparison.
+05. Q: What does OutOfSync mean? A: Desired and live state differ or expected resources are missing.
+06. Q: What does Healthy mean? A: Argo CD's resource health assessment reports healthy; it does not prove all user journeys work.
+07. Q: What is refresh? A: Recomputing repository/rendered state and comparing it with live resources.
+08. Q: What is sync? A: Applying desired resources from the configured source to the destination cluster.
+09. Q: What is auto-sync? A: A policy that automatically applies detected desired-state changes.
+10. Q: What is prune? A: Deleting tracked live resources that are no longer present in desired state, when enabled.
+11. Q: What is self-heal? A: Automatically correcting live changes that drift from desired state.
+12. Q: Why is prune risky? A: A source removal can delete live resources; review ownership and protect critical data/resources.
+13. Q: How do you debug OutOfSync? A: Inspect diff, source revision, rendering inputs, live object, events, and field ownership.
+14. Q: What is an AppProject? A: A boundary for allowed repositories, destinations, and resource kinds for applications.
+15. Q: Why use Projects? A: To constrain what teams can deploy and where, supporting tenancy and governance.
+16. Q: How does Argo CD deploy Helm charts? A: It renders charts from configured sources/values and reconciles resulting Kubernetes manifests.
+17. Q: Does Argo CD replace Helm? A: No; it can use Helm for rendering while managing desired-state reconciliation.
+18. Q: What is Kustomize? A: A manifest customization tool Argo CD can use as a source renderer.
+19. Q: What are sync waves? A: Ordering controls that apply resources in phases based on wave annotations.
+20. Q: What is a resource hook? A: A lifecycle Job or other resource executed at a sync phase, such as a pre-sync check.
+21. Q: What is an ApplicationSet? A: A controller/template mechanism that generates Applications from cluster, directory, or other generators.
+22. Q: How do you manage secrets in GitOps? A: Use a reviewed encryption or external secret integration; do not commit plaintext credentials.
+23. Q: What is a repository credential template? A: Reusable access configuration for matching repositories; keep its scope limited.
+24. Q: How should Argo CD RBAC be configured? A: Grant least privilege by role/project and protect administrative actions.
+25. Q: What is resource tracking? A: How Argo CD identifies which live resources belong to an Application.
+26. Q: Why can a resource appear OutOfSync after apply? A: Defaults, mutating webhooks, field ownership, normalization, or rendering differences can alter it.
+27. Q: What is a diff customization? A: A narrow rule to ignore known non-desired fields; avoid hiding meaningful drift.
+28. Q: What is a sync option? A: A per-resource/application behavior modifier affecting how resources are applied or pruned.
+29. Q: How do you roll back a GitOps release? A: Revert desired manifests to a known-good commit and verify reconciliation and service health.
+30. Q: Why not use CLI rollback as the only recovery? A: It can leave Git and live state inconsistent; durable desired state should be corrected in Git.
+31. Q: What is a deployment revision? A: The source commit/chart version used for an application's rendered desired state.
+32. Q: How do you promote between environments? A: Promote a reviewed immutable artifact/version through environment-specific Git changes.
+33. Q: What is a sync window? A: A policy controlling allowed or denied synchronization times.
+34. Q: What if repo rendering fails? A: Inspect repository connectivity, credentials, revision, generator/chart errors, and application conditions.
+35. Q: What if the destination cluster is unreachable? A: Check cluster credentials, network, API health, certificates, and controller logs.
+36. Q: Why can an auto-sync application remain OutOfSync? A: Sync may fail, be blocked by policy/window, need pruning, or lack permission.
+37. Q: How do you prevent a bad manifest from deploying? A: Require CI validation, protected reviews, policy checks, and staged promotion.
+38. Q: What is a multi-source Application? A: An Application combining supported source inputs; track each source revision and value relationship carefully.
+39. Q: What is a sync wave limitation? A: It orders resource application but does not guarantee application-level readiness or business correctness.
+40. Q: How should Argo CD be made highly available? A: Use supported HA topology, reliable Redis/repo access as applicable, and monitor controllers/API.
+41. Q: How do you inspect controller problems? A: Review Argo CD component logs, metrics, events, and application conditions.
+42. Q: What is drift? A: A difference between live cluster configuration and desired state in Git.
+43. Q: Should all live changes be self-healed? A: No; emergency changes and controller-mutated fields need investigation and policy.
+44. Q: What is progressive delivery? A: Gradual traffic or workload promotion based on metrics, often using a compatible rollout controller.
+45. Q: How do you handle CRDs? A: Version and sequence CRD/schema changes carefully, and verify custom resources and controllers.
+46. Q: What does a degraded app tell you? A: One or more resources fail health assessment; inspect the specific resource and runtime symptoms.
+47. Q: How do you protect the Argo CD UI/API? A: Use SSO, network restrictions, TLS, least privilege, secure admin credentials, and audit controls.
+48. Q: What if an emergency fix was made directly in the cluster? A: Record and review it, then make the equivalent approved Git change or revert it.
+49. Q: How do you audit a deployment? A: Trace the Git commit, approver, rendered revision, sync operation, and resulting health/metrics.
+50. Q: Describe a safe GitOps release. A: Validate and review Git changes, sync a versioned artifact progressively, observe health, and revert desired state if needed.

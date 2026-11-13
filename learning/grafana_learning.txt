@@ -1,0 +1,100 @@
+GRAFANA LEARNING AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+=========================================
+
+GOAL
+----
+Grafana visualizes and explores data from data sources such as Prometheus,
+Loki, and SQL databases. It also supports alerting and dashboards. Grafana
+does not replace the source system: query correctness, access controls,
+data retention, and source health remain important.
+
+LEARNING PATH
+-------------
+Basic:
+  - Data sources, dashboards, panels, queries, time range, and variables.
+  - Explore mode, dashboard sharing, annotations, and folders.
+Intermediate:
+  - PromQL panels, transformations, templating, alert rules, contact points,
+    notification policies, provisioning, and dashboard JSON.
+Advanced:
+  - RBAC, SSO, high availability, query performance, alert grouping,
+    multi-source correlation, and configuration-as-code.
+Expert:
+  - Dashboard governance, tenant isolation, SLO experiences, operational
+    resilience, upgrade strategy, and alert quality measurement.
+
+PRACTICAL DASHBOARD RULES
+-------------------------
+  - Start with a question or service indicator, not a chart type.
+  - Show units, labels, time range, and useful thresholds.
+  - Prefer a few high-signal panels over a wall of graphs.
+  - Link panels to logs, traces, runbooks, and deployment annotations.
+  - Provision production dashboards from reviewed files or Git.
+
+REAL-WORLD INCIDENT: DASHBOARD SHOWS NO DATA
+--------------------------------------------
+Check selected time range and dashboard variables, then verify the data
+source connection, query syntax, label filters, permissions, and source
+retention. Run the query in Explore and inspect the raw returned series.
+Distinguish no matching data from a Grafana connectivity error.
+
+REAL-WORLD INCIDENT: ALERT NOTIFICATION DID NOT ARRIVE
+------------------------------------------------------
+Inspect alert rule state and evaluation errors, then contact point test,
+notification-policy routing labels, mute timings, grouping, and delivery
+logs. Verify whether the alert is pending, firing, resolved, or silenced.
+Test the complete route and document ownership and escalation behavior.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is Grafana? A: A platform for querying, visualizing, and alerting on data from configured data sources.
+02. Q: What is a data source? A: A configured connection and query interface to a backend such as Prometheus or Loki.
+03. Q: What is a dashboard? A: A collection of panels and configuration for exploring related operational data.
+04. Q: What is a panel? A: A visualization or data display driven by one or more queries.
+05. Q: What is Explore? A: An interactive workspace to query and inspect data sources without editing a dashboard.
+06. Q: What is a dashboard variable? A: A parameter used to dynamically filter or customize dashboard queries.
+07. Q: What is a templated dashboard? A: A reusable dashboard whose variables select services, environments, clusters, or other dimensions.
+08. Q: What is a dashboard time range? A: The interval over which panel queries retrieve data.
+09. Q: Why specify units? A: They prevent misinterpretation of values such as bytes, seconds, percentages, and rates.
+10. Q: What is a transformation? A: A Grafana-side operation on query results, such as joining, filtering, or renaming fields.
+11. Q: When should transformations be avoided? A: When they obscure expensive or incorrect queries better handled at the data source.
+12. Q: What is a dashboard annotation? A: A time-marked event, such as a deployment, shown alongside metric changes.
+13. Q: What are folders used for? A: Organizing dashboards and applying access controls to groups of dashboards.
+14. Q: What is a contact point? A: A destination/integration that receives alert notifications.
+15. Q: What is a notification policy? A: Rules that route alerts to contact points based on labels and grouping configuration.
+16. Q: What is an alert rule? A: A query and condition evaluated to determine alert state.
+17. Q: Pending versus firing? A: Pending means the condition has not met its hold duration; firing means it has.
+18. Q: What is a mute timing? A: A scheduled period when notifications are suppressed while alert evaluation may continue.
+19. Q: What is a silence? A: A time-bounded, label-matching suppression of notifications.
+20. Q: How do you reduce notification noise? A: Fix rule quality, group related alerts, route by ownership, and use meaningful hold durations.
+21. Q: Why might a panel show no data? A: Wrong time range, variables, query, labels, data source, permissions, or missing source data.
+22. Q: How do you debug a slow dashboard? A: Inspect query duration and series count, narrow time/labels, optimize source queries, and reduce panel load.
+23. Q: Why use dashboard provisioning? A: It makes dashboards reviewable, reproducible, and consistent across environments.
+24. Q: What is dashboard JSON? A: A serialized dashboard definition that can be versioned and provisioned.
+25. Q: What is a data-source UID? A: A stable identifier used to reference a data source in dashboard/provisioning configuration.
+26. Q: How do you avoid hard-coded environment names? A: Use variables or environment-specific provisioning with controlled defaults.
+27. Q: What is RBAC? A: Role-based access control for managing users' and teams' permissions.
+28. Q: Why use least privilege? A: To limit access to sensitive dashboards, data, and administrative actions.
+29. Q: How should Grafana credentials be stored? A: In a secret manager or protected configuration, not in dashboards or source history.
+30. Q: What is SSO? A: Single sign-on using an identity provider to authenticate users to Grafana.
+31. Q: What is a service account? A: A non-human identity/token used by automation with scoped permissions.
+32. Q: How do you test alerting? A: Validate query and labels, test contact point, simulate a controlled condition, and verify end-to-end routing.
+33. Q: Why are dashboard alerts different from visual thresholds? A: Alert rules evaluate independently and have state/routing semantics; a colored panel alone may not notify.
+34. Q: What should an alert annotation include? A: Clear summary, impact, relevant labels, and a runbook or investigation link.
+35. Q: What is an alert group? A: Related alerts grouped for notification to reduce duplicated messages.
+36. Q: How can Grafana correlate metrics and logs? A: Configure data-source links and shared labels such as service, environment, and trace identifiers.
+37. Q: What is a data link? A: A link from a panel/data point to a relevant dashboard, logs, traces, or external system.
+38. Q: How do you annotate deployments? A: Send deployment events or use a data-source annotation query with time and release metadata.
+39. Q: What is high availability for Grafana? A: Multiple Grafana instances with shared/configured dependencies and suitable load balancing/session strategy.
+40. Q: Does HA Grafana make a data source highly available? A: No; the source backend needs its own availability design.
+41. Q: Why should dashboards be tested? A: Query or schema changes can silently break operational views and alerts.
+42. Q: What belongs on a service overview dashboard? A: User-facing traffic, errors, latency, saturation, dependency health, and release context.
+43. Q: What is a RED dashboard? A: A service view of Rate, Errors, and Duration.
+44. Q: What is a USE dashboard? A: A resource view of Utilization, Saturation, and Errors.
+45. Q: Why avoid too many panels? A: It increases cognitive load and query pressure while making important signals harder to find.
+46. Q: What is a dashboard library panel? A: A reusable panel that can be maintained consistently across dashboards.
+47. Q: What if Grafana connects but one team sees no data? A: Check team permissions, data-source permissions, folder access, and query-level restrictions.
+48. Q: How do you upgrade Grafana safely? A: Back up configuration/state, review compatibility, test plugins and dashboards, then roll out with monitoring.
+49. Q: How do you investigate an alert that did not fire? A: Check evaluation errors, query result, rule labels, pending duration, mute/silence state, and routing history.
+50. Q: Describe a useful operations dashboard. A: It answers a defined on-call question quickly, links to investigations, and is versioned and tested.

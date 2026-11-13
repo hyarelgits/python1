@@ -1,0 +1,112 @@
+LINUX SYSTEM ADMINISTRATION AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+===============================================
+
+GOAL
+----
+Linux is an operating system family built around the Linux kernel. These
+skills help operate servers, containers, and deployment platforms. Learn
+processes, permissions, filesystems, networking, services, logs, packages,
+shell safety, and troubleshooting.
+
+LEARNING PATH
+-------------
+Basic:
+  - Files/directories, paths, shell, users/groups, permissions, processes.
+  - Commands: pwd, ls, cd, cat, grep, find, ps, df, free, ip.
+Intermediate:
+  - systemd, journald, package management, SSH, cron, mounts, DNS, sockets.
+  - Pipes, redirection, environment, signals, shell scripting.
+Advanced:
+  - Boot, kernel logs, filesystems, LVM, firewall, namespaces/cgroups,
+    performance, security hardening, and recovery.
+Expert:
+  - Capacity, fleet configuration, kernel/network diagnosis, incident
+    response, access governance, and reproducible system operations.
+
+CORE COMMANDS
+-------------
+    # Show the current directory and files, including hidden entries.
+    pwd
+    ls -la
+    # Inspect disk space and the largest top-level directories.
+    df -h
+    du -xhd1 /var 2>/dev/null | sort -h
+    # Inspect memory, CPU/load, and processes.
+    free -h
+    top
+    ps aux --sort=-%cpu | head
+    # Inspect a service and recent logs.
+    systemctl status nginx --no-pager
+    journalctl -u nginx --since "30 minutes ago"
+    # Check listening sockets and IP configuration.
+    ss -lntup
+    ip address
+
+REAL-WORLD INCIDENT: SERVER DISK IS FULL
+----------------------------------------
+Check `df -h` and `df -i` to distinguish block exhaustion from inode
+exhaustion. Find large directories and deleted-but-open files with approved
+tools such as `lsof +L1`. Identify the owning service, rotate or archive
+logs safely, remove only known disposable data, and fix retention. Do not
+blindly delete files under system or application directories.
+
+REAL-WORLD INCIDENT: SERVICE IS DOWN
+------------------------------------
+Check `systemctl status`, `journalctl`, process state, config syntax, port
+listeners, disk/memory, and recent deployment changes. Validate dependencies
+and permissions; restore the known-good configuration if required. Restart
+only after preserving useful evidence and understanding the impact.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is the Linux kernel? A: The core that manages processes, memory, devices, filesystems, and system-call interfaces.
+02. Q: What is a shell? A: A command interpreter that runs programs and supports scripting and I/O composition.
+03. Q: What is a process? A: A running program instance with an ID, resources, credentials, and execution state.
+04. Q: What is PID 1? A: The initial process in a PID namespace, commonly init/systemd on a host, with special lifecycle responsibilities.
+05. Q: What is a daemon? A: A background service process that provides functionality without an interactive terminal.
+06. Q: What does `systemctl` do? A: Controls and inspects systemd units such as services, timers, and mounts.
+07. Q: What is `journalctl`? A: A tool for querying logs stored by systemd-journald.
+08. Q: How do you inspect service failure? A: Use `systemctl status` and `journalctl -u`, then inspect config, dependencies, permissions, and resources.
+09. Q: What are file permissions? A: Read, write, and execute access bits for owner, group, and other users.
+10. Q: What does chmod 755 mean? A: Owner has rwx; group and others have r-x, expressed in octal permission bits.
+11. Q: What does `chown` do? A: Changes file ownership and optionally group; use narrowly and verify paths first.
+12. Q: What is umask? A: A mask that removes permission bits from default creation permissions.
+13. Q: What is a symbolic link? A: A filesystem reference to another path; it can cross filesystems and may dangle.
+14. Q: Hard link versus symbolic link? A: A hard link names the same inode on a filesystem; a symlink stores a path reference.
+15. Q: What is an inode? A: Filesystem metadata identifying a file, including ownership, permissions, and block references.
+16. Q: Why can a disk report full with free space shown? A: Inodes may be exhausted, deleted files may remain open, or quotas/reservations apply.
+17. Q: What does `df` show? A: Filesystem capacity and usage.
+18. Q: What does `du` show? A: Estimated storage used by files/directories.
+19. Q: What is a mount point? A: A directory where another filesystem is attached into the directory tree.
+20. Q: What is `/etc/fstab`? A: Persistent filesystem mount configuration read during boot or mount operations.
+21. Q: What is swap? A: Disk-backed virtual memory used under pressure; it is slower than RAM and not a substitute for capacity.
+22. Q: What is load average? A: Average runnable and uninterruptible tasks over time; interpret relative to CPU count and workload.
+23. Q: How do you find CPU-heavy processes? A: Use `top`/`ps` and correlate process behavior with application metrics and logs.
+24. Q: What is a zombie process? A: An exited child whose parent has not collected its exit status; it holds a process-table entry.
+25. Q: What is a signal? A: A notification to a process; SIGTERM requests graceful termination, while SIGKILL cannot be caught.
+26. Q: How do you identify listening ports? A: Use `ss -lntup` with appropriate privileges and inspect the owning process.
+27. Q: What does DNS do? A: Resolves names to records such as IP addresses; debug resolver config and reachability separately.
+28. Q: What is a default gateway? A: The next-hop router used for destinations without a more specific route.
+29. Q: What is TCP? A: A reliable, ordered, connection-oriented transport protocol.
+30. Q: What is UDP? A: A connectionless transport protocol with no built-in delivery/order guarantee.
+31. Q: How do you check an HTTP endpoint? A: Use curl with expected method, headers, timeout, and response-code inspection.
+32. Q: What is SSH key authentication? A: Public-key authentication where the server verifies a client holding the corresponding private key.
+33. Q: How do you secure SSH? A: Restrict access, use strong identity controls, patch, disable unnecessary methods, and monitor authentication logs.
+34. Q: What is a package manager? A: A tool that installs, updates, verifies, and removes software from configured repositories.
+35. Q: Why avoid installing random binaries as root? A: They can compromise the host; verify source, integrity, permissions, and necessity.
+36. Q: What is cron? A: A scheduler for recurring commands; handle environment, output, locking, and failure reporting explicitly.
+37. Q: What is an environment variable? A: A process-scoped key/value setting inherited by child processes unless changed.
+38. Q: What is a pipe? A: A connection that sends one process's stdout to another process's stdin.
+39. Q: What is stderr? A: The standard error stream, separate from normal output and useful for diagnostics.
+40. Q: What is a cgroup? A: A Linux mechanism for accounting and limiting groups of processes' resources.
+41. Q: What is a namespace? A: A kernel isolation mechanism for views of resources such as PIDs, mounts, and networks.
+42. Q: What is OOM killer behavior? A: The kernel may terminate processes under memory exhaustion; inspect kernel logs and memory limits.
+43. Q: How do you check kernel messages? A: Use `dmesg` or journal kernel logs, subject to permissions and retention.
+44. Q: What is SELinux/AppArmor? A: Mandatory access-control systems that constrain process capabilities beyond traditional file permissions.
+45. Q: What is a firewall? A: A policy system that allows or denies network traffic by defined criteria.
+46. Q: How do you debug DNS but not connectivity? A: Check resolver configuration and name lookup, then test direct IP connectivity and routing.
+47. Q: What causes `Permission denied`? A: File mode/ownership, ACL, mount options, security policy, or parent-directory traversal restrictions.
+48. Q: A service cannot bind a port. What do you check? A: Existing listener, privileges/capabilities, address, namespace, and service configuration.
+49. Q: How do you respond to high memory use? A: Identify processes/cgroups, inspect trends and OOM logs, then address leak, workload size, or limits.
+50. Q: Describe a safe Linux incident workflow. A: Confirm impact, gather read-only evidence, isolate the cause, make a reversible fix, verify, and document prevention.

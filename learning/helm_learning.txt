@@ -1,0 +1,109 @@
+HELM LEARNING AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+=========================================
+
+GOAL
+----
+Helm is a package manager for Kubernetes. A chart contains templates,
+default values, metadata, and optional dependencies. A release is an
+installed instance of a chart with its own values and revision history.
+Helm renders Kubernetes manifests; Kubernetes controllers still reconcile
+the resulting resources.
+
+LEARNING PATH
+-------------
+Basic:
+  - Chart, release, repository, values.yaml, templates, and helpers.
+  - `helm repo`, `helm show`, `helm install`, `helm list`, `helm status`.
+Intermediate:
+  - Template functions, `include`, `with`, `range`, values schemas,
+    subcharts, dependencies, test hooks, and environment-specific values.
+Advanced:
+  - Upgrade/rollback safety, CRDs, hook lifecycle, chart signing,
+    schema validation, linting, and controlled chart publishing.
+Expert:
+  - Reusable chart APIs, backwards compatibility, policy, promotion,
+    drift handling, and safe platform-wide chart evolution.
+
+CORE COMMANDS
+-------------
+    # Create a starter chart layout.
+    helm create web
+    # Check chart structure and common template mistakes.
+    helm lint ./web
+    # Render templates locally for inspection without installing.
+    helm template web ./web -f values-prod.yaml
+    # Install or upgrade a release using reviewed values.
+    helm upgrade --install web ./web -n production --create-namespace -f values-prod.yaml
+    # Inspect the deployed release and its current revision.
+    helm status web -n production
+    # Review revision history before choosing a rollback target.
+    helm history web -n production
+
+REAL-WORLD INCIDENT: WRONG VALUES DEPLOYED
+------------------------------------------
+Compare the release's stored values with the intended environment file:
+`helm get values <release> -n <namespace> --all`. Inspect rendered manifests
+with `helm template` and live objects with kubectl. Correct the values source,
+validate in CI, then upgrade. Avoid relying on undocumented CLI flags or
+stale local defaults.
+
+REAL-WORLD INCIDENT: UPGRADE FAILS OR ROLLBACK DOES NOT FIX SERVICE
+--------------------------------------------------------------------
+Inspect Helm history, failed hook Jobs, Kubernetes events, and the actual
+rendered/live resources. Helm rollback restores Kubernetes release resources
+but may not reverse external side effects or database schema changes. Use
+backward-compatible migrations and explicitly repair irreversible changes.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is Helm? A: A package manager and templating/release tool for Kubernetes resources.
+02. Q: What is a chart? A: A versioned package containing metadata, templates, defaults, and optionally dependencies.
+03. Q: What is a release? A: An installed instance of a chart, tracked with its configuration and revision history.
+04. Q: What is values.yaml? A: The chart's default configuration values.
+05. Q: How can values be overridden? A: Through additional values files and supported CLI overrides; keep production values reviewed and traceable.
+06. Q: What is Chart.yaml? A: Chart metadata such as name, version, application version, and dependencies.
+07. Q: What is a template? A: A Go-template file rendered with chart values and release context into Kubernetes YAML.
+08. Q: What is `_helpers.tpl`? A: A convention for reusable named template definitions.
+09. Q: What does `include` do? A: Renders a named template and returns text that can be piped through formatting functions.
+10. Q: `include` versus `template`? A: `include` returns a string for further processing; `template` writes output directly.
+11. Q: What is `required` used for? A: It fails rendering when a necessary value is missing or empty.
+12. Q: What does `default` do? A: Supplies a fallback for an empty value; do not use it to hide required configuration errors.
+13. Q: What is `helm lint`? A: A static check for chart structure and common issues.
+14. Q: What is `helm template`? A: Local rendering of chart templates for inspection without applying them.
+15. Q: What does `helm upgrade --install` do? A: Upgrades an existing release or installs it if absent.
+16. Q: What is a Helm repository? A: A source/catalog for chart packages and index metadata.
+17. Q: How are chart dependencies declared? A: In Chart.yaml and resolved/vendor-managed with Helm dependency commands.
+18. Q: What is a subchart? A: A dependent chart included by a parent chart with scoped values.
+19. Q: What is a values schema? A: JSON Schema validation for values, catching invalid configuration before rendering.
+20. Q: What is a release revision? A: A recorded version of a release's chart/configuration lifecycle.
+21. Q: How do you roll back? A: Review `helm history`, then use `helm rollback` to a known revision and verify live health.
+22. Q: Does Helm rollback reverse database migrations? A: No; external side effects require separate compatible migration and recovery design.
+23. Q: What is a hook? A: A chart resource run at a lifecycle event, such as pre-install or post-upgrade.
+24. Q: What is a hook risk? A: Hooks can fail, linger, or have irreversible effects; define cleanup and timeout behavior.
+25. Q: What is a Helm test? A: A chart-defined test hook, commonly a Pod/Job that validates release behavior.
+26. Q: How do you avoid leaking secrets through Helm? A: Do not commit secret values or assume Helm release storage is secret-safe; use external secret management.
+27. Q: How do you debug malformed YAML? A: Run lint/template, inspect rendered output, and check indentation, quoting, and value types.
+28. Q: Why can `helm template` differ from runtime behavior? A: Cluster capabilities, API versions, admission, defaults, and controllers affect application.
+29. Q: What is `.Capabilities`? A: Template context describing Kubernetes/API capabilities available to Helm rendering.
+30. Q: How do you manage multiple environments? A: Use small reviewed values overlays with shared chart defaults and explicit release configuration.
+31. Q: Why avoid huge values files? A: They obscure ownership and make risky overrides difficult to review and test.
+32. Q: What does `--reuse-values` do? A: Carries prior release values into an upgrade; it can preserve stale settings if not reviewed.
+33. Q: What is `--atomic`? A: It requests rollback on failed install/upgrade; still inspect failure causes and external side effects.
+34. Q: What does `--wait` do? A: Waits for selected Kubernetes resources to reach readiness within a timeout.
+35. Q: Why may `--wait` time out? A: Pods may be unschedulable, unready, blocked by storage, or waiting on failing dependencies.
+36. Q: How should a chart handle CRDs? A: Follow Helm CRD lifecycle rules carefully; CRD upgrades/deletes require explicit compatibility planning.
+37. Q: What is chart version versus appVersion? A: Chart version tracks package changes; appVersion describes the packaged application version.
+38. Q: How do you test charts in CI? A: Lint, schema-validate, render representative values, run policy checks, then test in a disposable cluster.
+39. Q: What is chart signing? A: A mechanism to verify chart provenance and publisher identity according to trust policy.
+40. Q: How do you make templates maintainable? A: Keep values small and typed, use helpers, document behavior, and avoid clever logic.
+41. Q: Why use immutable image references in chart values? A: They make the deployed artifact traceable and prevent tag drift.
+42. Q: How do you handle deprecated values? A: Warn, document migration, preserve compatibility where needed, and remove only in a planned breaking release.
+43. Q: What if a chart install reports success but app is unhealthy? A: Inspect Pods/events/probes and release manifests; Helm success does not prove business health.
+44. Q: Can Helm manage objects changed manually? A: It tracks release manifests; manual drift can be overwritten or conflict with future upgrades.
+45. Q: How do you compare release values and manifests? A: Use `helm get values`, `helm get manifest`, and inspect live Kubernetes resources.
+46. Q: What is a chart lock file? A: A record of resolved dependency versions for more repeatable builds.
+47. Q: How do you package and publish a chart? A: Validate it, package with a version, sign if required, and publish to a controlled chart repository/OCI registry.
+48. Q: Why pin chart dependencies? A: To make builds predictable and reduce unexpected behavior from upstream changes.
+49. Q: How do you safely change a shared chart? A: Test consumers, preserve schema compatibility, publish a versioned change, and roll out progressively.
+50. Q: Describe a safe Helm release. A: Validate inputs, render and review, upgrade a versioned release, check health, and retain a tested rollback plan.

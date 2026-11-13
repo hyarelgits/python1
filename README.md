@@ -152,6 +152,15 @@ The `learning/` folder contains separate beginner-to-expert guides:
 - [LangGraph](learning/langgraph_learning.txt)
 - [MCP](learning/mcp_learning.txt)
 - [FastAPI](learning/fastapi_learning.txt)
+- [Docker](learning/docker_learning.txt)
+- [Kubernetes](learning/kubernetes_learning.txt)
+- [CI/CD Pipelines](learning/cicd_learning.txt)
+- [Helm](learning/helm_learning.txt)
+- [Prometheus](learning/prometheus_learning.txt)
+- [Grafana](learning/grafana_learning.txt)
+- [Argo CD](learning/argocd_learning.txt)
+- [Terraform](learning/terraform_learning.txt)
+- [Linux](learning/linux_learning.txt)
 
 Stop each running server with Ctrl+C in its terminal. Never commit private
 documents, model files, or `chroma_db/`.

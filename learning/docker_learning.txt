@@ -1,0 +1,137 @@
+DOCKER LEARNING AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+==========================================
+
+GOAL
+----
+Learn how to build, test, distribute, run, observe, and secure container
+images. Docker packages an application and its user-space dependencies; it
+does not package a separate host kernel or replace the host operating system.
+
+LEARNING PATH
+-------------
+Basic:
+  - Images, containers, registries, Docker Engine, Docker CLI.
+  - Run, inspect, logs, exec, stop, remove, and publish an image.
+  - Ports, environment variables, bind mounts, and named volumes.
+Intermediate:
+  - Dockerfile instructions, build context, cache, .dockerignore.
+  - Compose services, networks, health checks, and persistent data.
+  - Multi-stage builds, non-root users, tags, and image scanning.
+Advanced:
+  - BuildKit, buildx, multi-platform images, private registries.
+  - Resource limits, secrets, content trust, SBOMs, and provenance.
+  - Container networking, storage drivers, and daemon troubleshooting.
+Expert:
+  - Image lifecycle, supply-chain controls, isolation boundaries,
+    reproducible builds, runtime policy, and fleet-level observability.
+
+CORE COMMANDS
+-------------
+    # Download an image from its registry.
+    docker pull nginx:stable
+    # Run a detached container and map host port 8080 to container port 80.
+    docker run -d --name web -p 8080:80 nginx:stable
+    # Inspect startup output and investigate a failed service.
+    docker logs --tail 100 web
+    # List running containers; add -a to include stopped containers.
+    docker ps
+    # Open a shell in a running container for diagnosis.
+    docker exec -it web sh
+    # Build an image from the current directory and Dockerfile.
+    docker build -t example/web:1.0 .
+    # Remove a stopped container after preserving any needed data.
+    docker rm web
+
+DOCKERFILE EXAMPLE
+------------------
+    # Start with a small official Python runtime image.
+    FROM python:3.12-slim
+    # Set the application directory inside the image.
+    WORKDIR /app
+    # Install dependencies before source to improve layer caching.
+    COPY requirements.txt .
+    RUN pip install --no-cache-dir -r requirements.txt
+    # Copy only files allowed by .dockerignore.
+    COPY . .
+    # Document the port the application listens on.
+    EXPOSE 8000
+    # Run as an unprivileged user in production images.
+    USER 10001
+    # Start the service in the foreground so container signals work.
+    CMD ["python", "app.py"]
+
+REAL-WORLD INCIDENT: CONTAINER EXITS OR RESTARTS
+------------------------------------------------
+Symptoms: the container appears briefly and then disappears or restarts.
+Resolution: inspect `docker ps -a`, `docker logs <container>`, and
+`docker inspect <container>`. Check the process exit code, command, required
+environment variables, mounted files, and health check. Fix the application
+or configuration; do not mask the issue with an infinite shell loop.
+
+REAL-WORLD INCIDENT: IMAGE IS TOO LARGE / BUILDS ARE SLOW
+---------------------------------------------------------
+Inspect image layers and build context. Add a precise `.dockerignore`, copy
+dependency manifests before frequently changing source, use a multi-stage
+build, remove package-manager caches in the same layer, and choose a suitable
+runtime base. Verify the final image still contains required runtime files.
+
+REAL-WORLD INCIDENT: DATA DISAPPEARS AFTER RECREATE
+--------------------------------------------------
+Container writable layers are ephemeral. Store durable state in a named
+volume or external database, back it up, and test restore. A bind mount is
+useful for development; do not assume data inside a container survives
+replacement or host failure.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is a container? A: An isolated process with filesystem, network, and resource boundaries, sharing the host kernel.
+02. Q: What is a Docker image? A: An immutable template of layered files and metadata used to create containers.
+03. Q: What provides container isolation? A: Kernel namespaces, cgroups, filesystem controls, and runtime configuration; isolation depends on correct setup.
+04. Q: Image versus container? A: An image is the packaged template; a container is an instance with a lifecycle and runtime state.
+05. Q: What is a registry? A: A service for storing and distributing named image versions, such as GHCR or Docker Hub.
+06. Q: What does `FROM` do? A: Selects the base image and begins a build stage.
+07. Q: `RUN` versus `CMD`? A: RUN executes during build; CMD supplies the default command when a container starts.
+08. Q: `ENTRYPOINT` versus `CMD`? A: ENTRYPOINT defines the main executable; CMD provides default arguments or a replaceable command.
+09. Q: What does `COPY` do? A: Copies files from the build context into an image layer.
+10. Q: What is a build context? A: The files sent to the builder; keep it small and exclude secrets and irrelevant files.
+11. Q: What is `.dockerignore` for? A: Excludes files from the build context, reducing transfer time and accidental inclusion.
+12. Q: What is a layer? A: A cached filesystem change created by an image build instruction.
+13. Q: How do you improve build-cache reuse? A: Copy stable dependency manifests first, install dependencies, then copy frequently changing source.
+14. Q: What is a multi-stage build? A: A build with separate stages so compilers and temporary files need not enter the final image.
+15. Q: Why use a small base image? A: It can reduce transfer and attack surface, but must still provide required libraries and support.
+16. Q: How do you make a container persistent? A: Store durable data in a named volume or external service, not only its writable layer.
+17. Q: Bind mount versus named volume? A: A bind mount maps a host path; a named volume is managed by Docker and is easier to move between containers.
+18. Q: What does `-p 8080:80` mean? A: Map host TCP port 8080 to container port 80.
+19. Q: What is a Docker network? A: A virtual network that lets containers communicate under configured isolation and name resolution.
+20. Q: Why use Compose? A: To define and run a multi-container development or small deployment stack from one YAML file.
+21. Q: What is a health check? A: A command that reports application health; it complements, but does not replace, correct restart and orchestration policy.
+22. Q: How do you view container logs? A: Use `docker logs`; applications should write operational logs to stdout/stderr.
+23. Q: How do you inspect a container? A: Use `docker inspect` for configuration, mounts, network details, state, and exit information.
+24. Q: Why might `docker exec` fail? A: The container may have stopped, or the requested shell/binary may not exist in a minimal image.
+25. Q: Why use a non-root user? A: It limits damage if the application is compromised; grant only required file and network access.
+26. Q: Where should secrets go? A: Use a secrets manager or orchestrator secret mechanism; never bake credentials into image layers.
+27. Q: Why pin image versions or digests? A: To make deployments reproducible and avoid unexpected changes from a moving tag.
+28. Q: What is a tag? A: A human-readable image reference; tags can move, while a digest identifies exact content.
+29. Q: What is `EXPOSE`? A: Image metadata documenting a listening port; it does not publish that port on the host.
+30. Q: Why should PID 1 handle signals? A: It must receive termination signals and reap child processes for clean shutdown.
+31. Q: How do you stop a container gracefully? A: Send the configured stop signal, allow its grace period, then investigate if force-kill is needed.
+32. Q: What does `docker system df` show? A: Disk use by images, containers, local volumes, and build cache.
+33. Q: How do you clean disk safely? A: Inspect usage and ownership first; remove only known-unused images, containers, cache, or volumes.
+34. Q: Why can a container not reach another by `localhost`? A: Its localhost is its own network namespace; use a shared network and service name.
+35. Q: What causes `connection refused` between containers? A: Wrong port, app bound only to loopback, service not ready, or network/configuration error.
+36. Q: What is a multi-platform image? A: A manifest that selects an image variant for the requesting CPU/OS platform.
+37. Q: What does buildx provide? A: BuildKit-based builds, including multi-platform builds and advanced cache/export options.
+38. Q: Why scan images? A: To find known vulnerable packages and prioritize remediation based on exploitability and runtime exposure.
+39. Q: What is an SBOM? A: A machine-readable inventory of software components in an artifact.
+40. Q: What is image provenance? A: Evidence describing how and from which inputs an artifact was built.
+41. Q: How do you prevent secret leakage during builds? A: Exclude secrets from context and use supported build-secret mounts instead of COPY or ARG.
+42. Q: What is a Docker daemon? A: The service that manages image builds, containers, networks, and volumes.
+43. Q: Why should access to the Docker socket be restricted? A: Control of the daemon can commonly grant host-level control.
+44. Q: What is the writable container layer? A: The per-container layer above immutable image layers; it is generally lost when the container is removed.
+45. Q: How do you debug a failing startup? A: Check state, exit code, logs, command, config, mounts, dependencies, and health-check output.
+46. Q: A container is healthy locally but not remotely. What do you check? A: Port publication, firewall, bind address, DNS, reverse proxy, and the actual listener.
+47. Q: Why avoid `latest` in production? A: It is mutable and can silently resolve to a different build during deployment.
+48. Q: What is a restart policy? A: Runtime behavior for restarting exited containers; it does not fix a failing application.
+49. Q: How do you roll back an image? A: Deploy the previously verified immutable tag/digest and check persistent-data compatibility.
+50. Q: Explain your production container workflow. A: Review source, build reproducibly, test and scan, publish an immutable artifact, deploy gradually, observe, and roll back safely.

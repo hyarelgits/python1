@@ -1,0 +1,107 @@
+TERRAFORM LEARNING AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+=========================================
+
+GOAL
+----
+Terraform is an infrastructure-as-code tool. Configuration describes desired
+resources; providers interact with APIs; state maps configuration to real
+objects. Learn plan review, state protection, safe changes, modules, drift,
+imports, and collaboration before managing production infrastructure.
+
+LEARNING PATH
+-------------
+Basic:
+  - Providers, resources, data sources, variables, outputs, plan, apply.
+  - HCL syntax, dependency graph, formatting, validation.
+Intermediate:
+  - Modules, locals, state, remote backend, locking, workspaces,
+    lifecycle rules, import, and environment separation.
+Advanced:
+  - Provider/version constraints, refactoring/moved blocks, state repair,
+    policy checks, secrets, drift, and CI review.
+Expert:
+  - Platform module APIs, governance, blast-radius control, migrations,
+    recovery, and organization-wide state design.
+
+CORE COMMANDS
+-------------
+    # Format Terraform files consistently.
+    terraform fmt -recursive
+    # Check configuration and provider setup.
+    terraform init
+    # Validate syntax and internal consistency.
+    terraform validate
+    # Review proposed changes; do not skip this in shared environments.
+    terraform plan -out=tfplan
+    # Apply the reviewed saved plan with appropriate authorization.
+    terraform apply tfplan
+    # Inspect the current state addresses.
+    terraform state list
+
+REAL-WORLD INCIDENT: STATE LOCKED
+---------------------------------
+Identify the backend and lock owner, confirm no apply is still running, and
+check the lock record and job status. Wait or safely stop the stale operation.
+Use force-unlock only after proving the lock is stale and coordinating with
+the team; concurrent state writes can corrupt infrastructure tracking.
+
+REAL-WORLD INCIDENT: PLAN WANTS TO DESTROY A CRITICAL RESOURCE
+-------------------------------------------------------------
+Do not apply. Inspect the resource address, configuration changes, provider
+version, state, and plan details. Check for renamed resources, missing data,
+wrong workspace/backend, or immutable-field replacement. Use a moved block
+or import/refactor where appropriate, then generate and review a fresh plan.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is Terraform? A: An infrastructure-as-code tool that plans and applies changes through provider APIs.
+02. Q: What is a provider? A: A plugin that translates Terraform configuration into operations against a platform/API.
+03. Q: What is a resource? A: A managed infrastructure object declared in configuration.
+04. Q: What is a data source? A: A read-only lookup of information managed outside the current configuration.
+05. Q: What is HCL? A: HashiCorp Configuration Language used to describe Terraform configuration.
+06. Q: What is a plan? A: A proposed set of changes comparing configuration, state, and refreshed remote objects.
+07. Q: Why review plans? A: They reveal destructive, replacement, and unexpected changes before execution.
+08. Q: What is state? A: Terraform's mapping and metadata connecting configuration resource addresses to real objects.
+09. Q: Why protect state? A: It can contain sensitive values and is essential for safe change tracking.
+10. Q: What is a backend? A: The storage and coordination mechanism for Terraform state.
+11. Q: What is state locking? A: A backend mechanism that prevents concurrent state-changing operations.
+12. Q: Why not commit state to Git? A: It may expose secrets and concurrent edits can corrupt it; use a secure remote backend.
+13. Q: Does `sensitive = true` encrypt a value in state? A: No; it redacts some CLI output but the value may still be stored in state.
+14. Q: How do you protect secrets? A: Avoid hardcoding, restrict state access, use secret managers, and limit exposure in plans/logs.
+15. Q: What is `terraform init`? A: Initializes the working directory, backend, modules, and provider plugins.
+16. Q: What is `terraform validate`? A: Checks configuration syntax and internal consistency, not live API behavior.
+17. Q: What is `terraform fmt`? A: Formats HCL files consistently.
+18. Q: What is a module? A: A reusable collection of Terraform configuration with inputs and outputs.
+19. Q: What is a root module? A: The module in the current working directory that invokes Terraform.
+20. Q: What is a variable? A: An input parameter that makes configuration reusable or environment-specific.
+21. Q: What is an output? A: A value exposed from a module or root configuration for downstream use.
+22. Q: What is a local value? A: A named expression used to simplify or reuse configuration.
+23. Q: What is an implicit dependency? A: Terraform infers order from references between resource values.
+24. Q: When use `depends_on`? A: For a real dependency Terraform cannot infer; avoid adding unnecessary ordering.
+25. Q: What is a lifecycle rule? A: Resource behavior configuration such as create-before-destroy or prevent-destroy; use cautiously.
+26. Q: What does `create_before_destroy` do? A: Attempts to create a replacement before destroying the old object when supported and feasible.
+27. Q: What does `prevent_destroy` do? A: Rejects planned destruction while the rule is present; it is not a backup or absolute protection.
+28. Q: What is drift? A: A difference between actual infrastructure and Terraform's expected state/configuration.
+29. Q: How do you detect drift? A: Run a plan with refresh and inspect proposed changes against actual infrastructure.
+30. Q: What is import? A: Associating an existing remote object with a Terraform resource address.
+31. Q: Does import write configuration automatically? A: Import records state association; configuration must be authored/reconciled appropriately.
+32. Q: What is a workspace? A: A separate state instance for the same configuration; it is not always the best environment boundary.
+33. Q: How do you separate production state? A: Use deliberate backend keys/accounts/permissions and isolated pipelines; avoid accidental workspace selection.
+34. Q: Why pin provider versions? A: To make behavior repeatable and control upgrades through tested changes.
+35. Q: What is `.terraform.lock.hcl`? A: A lock file recording selected provider versions and checksums.
+36. Q: What is a saved plan? A: A serialized plan that can be reviewed and then applied, subject to freshness and security controls.
+37. Q: Why can a saved plan become stale? A: Configuration or remote/state conditions may change after it was generated.
+38. Q: What is a moved block? A: A declarative state-address refactor instruction that avoids unnecessary recreation after renaming/moving resources.
+39. Q: How do you refactor a module safely? A: Preserve addresses with moved blocks or state operations, then review a no-unintended-change plan.
+40. Q: What is `terraform taint`? A: A legacy replacement-marking workflow; prefer current declarative replacement mechanisms for planned changes.
+41. Q: What is `terraform refresh`? A: Older standalone refresh workflows are generally replaced by plan/apply refresh behavior; understand exact CLI version semantics.
+42. Q: How should Terraform run in CI? A: Validate and plan on changes, publish reviewed plans, and gate applies with protected permissions.
+43. Q: Why avoid automatic apply on every branch? A: Unreviewed code can change or destroy real infrastructure.
+44. Q: What is policy as code? A: Automated rules that evaluate configuration/plans against security or organizational requirements.
+45. Q: What causes perpetual diffs? A: Provider normalization, defaults, external controllers, unstable values, or configuration/state mismatch.
+46. Q: What should you do when plan shows replacement? A: Inspect immutable field changes, dependencies, and data impact; do not apply until replacement is understood.
+47. Q: How do you recover corrupted or lost state? A: Stop writes, restore a protected backup, reconcile object IDs, and validate a cautious plan.
+48. Q: What is a remote state data source? A: A way to consume outputs from another state; restrict access and avoid tight coupling.
+49. Q: How do you handle a provider upgrade? A: Read upgrade notes, update constraints/lock file intentionally, test plans, and deploy gradually.
+50. Q: Describe safe Terraform operations. A: Secure remote state, pin dependencies, review plans, control apply permissions, and test recovery.

@@ -1,0 +1,113 @@
+KUBERNETES LEARNING AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+==========================================
+
+GOAL
+----
+Kubernetes (K8s) schedules and manages containerized workloads across a
+cluster. Learn the declarative API, controllers, networking, storage,
+security, rollout, and diagnosis before operating production clusters.
+
+LEARNING PATH
+-------------
+Basic:
+  - Cluster, control plane, node, Pod, Deployment, Service, namespace.
+  - kubectl get/describe/logs/exec/apply/delete and YAML manifests.
+Intermediate:
+  - ConfigMaps, Secrets, probes, resource requests/limits, rollout history.
+  - Ingress/Gateway concepts, DNS, persistent volumes, StatefulSets, RBAC.
+Advanced:
+  - Scheduling, autoscaling, disruption budgets, network policies,
+    admission, operators, cluster upgrades, and workload security.
+Expert:
+  - Multi-cluster design, reliability objectives, capacity, disaster
+    recovery, policy governance, and incident command.
+
+CORE COMMANDS
+-------------
+    # List Pods in every namespace.
+    kubectl get pods -A
+    # Explain a Pod's events, scheduling, and container state.
+    kubectl describe pod POD_NAME -n NAMESPACE
+    # Read current container output.
+    kubectl logs POD_NAME -n NAMESPACE
+    # Follow the previous container's logs after a restart.
+    kubectl logs POD_NAME -n NAMESPACE --previous
+    # Apply a reviewed declarative manifest.
+    kubectl apply -f deployment.yaml
+    # Inspect recent cluster events in chronological order.
+    kubectl get events -A --sort-by=.metadata.creationTimestamp
+
+REAL-WORLD INCIDENT: PODS ARE PENDING
+-------------------------------------
+Check `kubectl describe pod` events, then inspect node capacity, requests,
+taints/tolerations, node selectors, affinity, PVC binding, and quotas. Fix
+the actual scheduling constraint or add capacity; lowering requests without
+understanding workload needs can create node pressure.
+
+REAL-WORLD INCIDENT: CRASHLOOPBACKOFF
+-------------------------------------
+Read current and `--previous` logs, inspect exit code and events, verify
+command, configuration, Secret/ConfigMap mounts, dependencies, and probes.
+Fix the startup cause. A liveness probe that is too aggressive can create
+restarts; use startup/readiness/liveness probes for their distinct purposes.
+
+REAL-WORLD INCIDENT: SERVICE RETURNS 502 / NO ENDPOINTS
+-------------------------------------------------------
+Check Service selectors and Pod labels, `kubectl get endpoints` (or
+EndpointSlices), readiness status, targetPort, application bind address,
+Ingress/Gateway routing, and network policy. A Service usually routes only
+to ready matching Pods.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is a Kubernetes cluster? A: A control plane plus worker nodes that run and coordinate workloads.
+02. Q: What is a Pod? A: The smallest scheduled unit, containing one or more co-located containers sharing network and storage context.
+03. Q: Why use a Deployment? A: It manages replicated stateless Pods and supports declarative updates and rollbacks.
+04. Q: What is a ReplicaSet? A: A controller that maintains a desired number of matching Pod replicas; Deployments manage ReplicaSets.
+05. Q: What is a Service? A: A stable virtual network endpoint that selects matching Pods.
+06. Q: ClusterIP versus NodePort? A: ClusterIP is cluster-internal; NodePort exposes a port on each node, often behind a load balancer.
+07. Q: What does LoadBalancer Service do? A: Requests an external load-balancing implementation from the environment/provider.
+08. Q: What is an Ingress? A: An API for HTTP routing that requires an Ingress controller; newer designs may use Gateway API.
+09. Q: What is a namespace? A: A resource grouping and naming scope, not a complete security boundary by itself.
+10. Q: What does `kubectl apply` do? A: Creates or updates resources from declarative configuration.
+11. Q: What is reconciliation? A: Controllers repeatedly compare actual state to desired state and make corrective changes.
+12. Q: What is a ConfigMap? A: A mechanism for non-secret configuration data.
+13. Q: What is a Secret? A: An API resource for sensitive values; protect it with encryption, RBAC, and secure delivery.
+14. Q: Readiness versus liveness probe? A: Readiness controls traffic eligibility; liveness can restart a stuck container.
+15. Q: What is a startup probe? A: It gives slow-starting applications time before liveness/readiness checks take effect.
+16. Q: What are resource requests? A: Scheduling reservations used to place Pods and reason about capacity.
+17. Q: What are resource limits? A: Runtime ceilings; CPU is throttled and memory overuse can trigger OOM termination.
+18. Q: Why did a Pod become OOMKilled? A: It exceeded its memory limit or node memory was exhausted; inspect usage, limits, and memory behavior.
+19. Q: What causes CrashLoopBackOff? A: Repeated container failures with backoff; inspect logs, exit status, configuration, probes, and dependencies.
+20. Q: What causes ImagePullBackOff? A: Pull failure such as wrong image reference, registry auth, network issue, or missing architecture/tag.
+21. Q: What causes a Pending Pod? A: Scheduling or volume constraints, insufficient resources, taints, selectors, quotas, or unbound claims.
+22. Q: What is a PersistentVolume? A: A cluster storage resource provisioned or created for persistent workloads.
+23. Q: What is a PersistentVolumeClaim? A: A workload's request for storage with specified properties.
+24. Q: Deployment versus StatefulSet? A: Deployments suit interchangeable replicas; StatefulSets provide stable identity and ordered behavior for stateful apps.
+25. Q: What is a DaemonSet? A: A controller that runs a Pod on each eligible node, commonly for agents.
+26. Q: What is a Job? A: A controller that runs Pods to completion for finite tasks.
+27. Q: What is a CronJob? A: A schedule that creates Jobs; ensure overlap and missed-run behavior suit the task.
+28. Q: What is a ServiceAccount? A: An identity for a workload to authenticate to the Kubernetes API.
+29. Q: What is RBAC? A: Role-based API authorization using Roles/ClusterRoles and bindings.
+30. Q: What is a NetworkPolicy? A: A policy restricting Pod traffic when supported and enforced by the network plugin.
+31. Q: What is a label? A: A key/value identifier used for selection and organization.
+32. Q: What is an annotation? A: Non-selector metadata for tooling, integrations, or descriptive information.
+33. Q: What is a taint and toleration? A: A taint repels Pods unless they tolerate it; it does not force placement by itself.
+34. Q: What is node affinity? A: Rules that influence or require Pod placement based on node labels.
+35. Q: What is HPA? A: Horizontal Pod Autoscaler adjusts replica count based on metrics and configured bounds.
+36. Q: What does a PodDisruptionBudget do? A: Limits voluntary disruptions to help preserve availability during maintenance.
+37. Q: How does a rolling update work? A: It incrementally replaces old Pods while respecting rollout strategy and readiness.
+38. Q: How do you roll back a Deployment? A: Inspect rollout history, then use `kubectl rollout undo` or apply a known-good version.
+39. Q: How do you investigate DNS failure? A: Check Service name/namespace, CoreDNS Pods/logs, resolv.conf, and network policy.
+40. Q: Why is a Pod not receiving Service traffic? A: Check selector/labels, readiness, endpoints, port mapping, and network routing.
+41. Q: What is a CRD? A: A CustomResourceDefinition extends the Kubernetes API with a new resource type.
+42. Q: What is an operator? A: A controller that encodes domain-specific operational reconciliation, often using custom resources.
+43. Q: What is etcd? A: The consistent key-value store for Kubernetes API state; protect and back it up appropriately.
+44. Q: What is the scheduler responsible for? A: Selecting a suitable node for each unscheduled Pod based on constraints and capacity.
+45. Q: How do you debug a failed rollout? A: Inspect Deployment conditions, ReplicaSets, Pod events, image, probes, resource constraints, and logs.
+46. Q: Why avoid putting passwords in plain manifests? A: They can enter source history and logs; use secret-management controls and least privilege.
+47. Q: How should a cluster be upgraded? A: Review compatibility, back up critical state, test, upgrade in supported order, and validate workloads.
+48. Q: What is a sidecar? A: A supporting container in the same Pod that shares lifecycle and selected resources with the main container.
+49. Q: A rollout is healthy but users see errors. What do you check? A: External routing, dependency health, application metrics/logs, readiness semantics, and client impact.
+50. Q: Describe a safe Kubernetes release. A: Review manifests, test, use bounded rollout, monitor service indicators, and have a tested rollback path.

@@ -1,0 +1,115 @@
+CI/CD PIPELINE LEARNING AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+============================================
+
+GOAL
+----
+Continuous Integration (CI) validates small changes frequently. Continuous
+Delivery keeps verified changes releasable; Continuous Deployment
+automatically releases qualifying changes. A pipeline should produce
+traceable artifacts, enforce quality/security checks, and support recovery.
+
+LEARNING PATH
+-------------
+Basic:
+  - Source control, branches, commits, triggers, jobs, steps, logs.
+  - Build, test, package, publish, and deploy stages.
+Intermediate:
+  - Artifacts, dependency caches, environments, approvals, secrets,
+    matrix builds, reusable workflows, and status checks.
+Advanced:
+  - Provenance/SBOM, least-privilege tokens, supply-chain controls,
+    canary/blue-green releases, rollback, and deployment strategies.
+Expert:
+  - Pipeline governance, fleet-wide runner security, reliability metrics,
+    developer feedback time, and disaster recovery.
+
+GENERIC PIPELINE SHAPE
+----------------------
+    # 1. Check out a reviewed commit.
+    checkout-source
+    # 2. Install pinned dependencies and run fast feedback checks.
+    lint-and-unit-test
+    # 3. Build one immutable artifact and record its digest.
+    build-container-image
+    # 4. Scan, test, sign, and publish that same artifact.
+    verify-and-publish
+    # 5. Deploy the digest to a test environment and run smoke tests.
+    deploy-and-verify
+    # 6. Promote the exact artifact with approval or policy controls.
+    promote-to-production
+
+REAL-WORLD INCIDENT: DEPLOYMENT PASSES BUT THE APP FAILS
+--------------------------------------------------------
+Compare deployed image digest, configuration, migrations, and runtime
+health with the last known-good release. Stop promotion, route traffic back
+or roll back to the known-good artifact, and preserve logs/metrics. Fix the
+pipeline gate that missed the failure, then add a repeatable regression or
+smoke test. Avoid rebuilding a different artifact for rollback.
+
+REAL-WORLD INCIDENT: PIPELINES ARE SLOW OR FLAKY
+-----------------------------------------------
+Measure time per job, separate setup from tests, cache only safe immutable
+dependencies, parallelize independent checks, and quarantine flaky tests
+with owners and deadlines. Do not retry every failure blindly; distinguish
+transient infrastructure errors from deterministic product failures.
+
+REAL-WORLD INCIDENT: SECRET LEAKED IN BUILD LOG
+-----------------------------------------------
+Revoke and rotate the credential immediately, identify its access and
+exposure window, remove or restrict logs where possible, and investigate
+usage. Add secret masking, short-lived scoped credentials, protected
+environments, and checks that prevent secrets from entering artifacts.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is CI? A: Frequent integration of changes with automated build and validation.
+02. Q: What is Continuous Delivery? A: Keeping changes verified and ready for release, typically with a controlled production decision.
+03. Q: What is Continuous Deployment? A: Automatically releasing qualifying changes to production after required checks.
+04. Q: What is a pipeline? A: An automated sequence of jobs and dependencies that validates, packages, or delivers software.
+05. Q: What is a runner/agent? A: The machine or process that executes pipeline jobs.
+06. Q: Why use small changes? A: They reduce integration risk and make failures easier to isolate.
+07. Q: What is a pipeline artifact? A: A produced file/package retained or promoted between jobs or releases.
+08. Q: Artifact versus cache? A: Artifacts are outputs to preserve; caches accelerate repeat work and should be safe to regenerate.
+09. Q: Why build once and promote? A: The tested artifact is the same artifact deployed to later environments.
+10. Q: What is an immutable artifact? A: A version identified by content or immutable ID, such as a container digest.
+11. Q: What is a quality gate? A: A required condition, such as tests or policy, that must pass before promotion.
+12. Q: Unit versus integration test? A: Unit tests isolate small logic; integration tests verify component interactions.
+13. Q: What is a smoke test? A: A small post-deployment check that confirms critical service paths work.
+14. Q: What is a flaky test? A: A test whose outcome varies without relevant code changes, often due to timing or shared state.
+15. Q: How do you handle flaky tests? A: Diagnose and fix, track ownership, isolate causes, and avoid permanent unbounded retries.
+16. Q: Why cache dependencies? A: To reduce repeated download/build work, with keys tied to lockfiles and platform.
+17. Q: When can caching be unsafe? A: When stale or untrusted content can affect builds or when cache keys cross trust boundaries.
+18. Q: How should secrets be used in CI? A: Inject scoped, short-lived secrets only into trusted jobs; mask output and never bake them into artifacts.
+19. Q: What is least privilege in CI? A: Give each job only the permissions and credentials needed for its specific task.
+20. Q: Why are pull-request jobs risky? A: Untrusted code may run scripts that exfiltrate secrets or alter the build environment.
+21. Q: How do you protect deployment credentials? A: Use protected environments, approvals, short-lived identity federation, and scoped access.
+22. Q: What is a matrix build? A: Running the same job across combinations such as OS, runtime, or version.
+23. Q: What is parallelization? A: Running independent work concurrently to reduce end-to-end feedback time.
+24. Q: What is a dependency graph? A: A declaration of job prerequisites that controls execution order.
+25. Q: What is a deployment environment? A: A named target with configuration, protection rules, and deployment history.
+26. Q: What is blue-green deployment? A: Run old and new environments side by side, then switch traffic and retain rollback capacity.
+27. Q: What is canary deployment? A: Send a limited portion of traffic to a new version and expand only if indicators are healthy.
+28. Q: What is rolling deployment? A: Replace instances gradually while maintaining the configured availability limits.
+29. Q: What makes rollback difficult? A: Irreversible schema/data changes, incompatible APIs, or unavailable previous artifacts.
+30. Q: How do you make database migrations safer? A: Use backward-compatible expand/migrate/contract steps and test rollback or forward repair.
+31. Q: What is a software supply-chain attack? A: An attack that compromises source, dependencies, build infrastructure, or artifact distribution.
+32. Q: What is an SBOM? A: An inventory of components used to build an artifact.
+33. Q: What is build provenance? A: Verifiable metadata about artifact source, builder, and build process.
+34. Q: Why sign artifacts? A: To verify origin and integrity, with trust policy enforced at deployment.
+35. Q: What is an approval gate? A: A human or policy decision required before a protected action.
+36. Q: Why separate build and deploy permissions? A: It reduces the impact of a compromised build job.
+37. Q: How do you handle a canceled pipeline? A: Ensure cleanup is safe, partial deploy state is visible, and locks/resources are released.
+38. Q: What is idempotency in deployment? A: Repeating the operation converges to the intended state without unintended duplicate effects.
+39. Q: How do you avoid concurrent deployment races? A: Use environment locks/serialization and define supersession behavior.
+40. Q: What metrics show pipeline health? A: Lead time, change failure rate, recovery time, queue time, duration, and flaky-test rate.
+41. Q: How should a pipeline respond to a vulnerability scan failure? A: Apply risk policy, block or constrain promotion, triage, remediate, and document any exception.
+42. Q: What is a self-hosted runner risk? A: Persistent compromise, unsafe cross-job state, exposed network access, and untrusted code execution.
+43. Q: How do you secure runners? A: Isolate jobs, patch and rotate them, restrict egress/permissions, and avoid sharing secrets with untrusted builds.
+44. Q: Why pin third-party actions/plugins? A: To reduce unexpected code changes; pin trusted immutable revisions and review updates.
+45. Q: How do you debug a failing pipeline? A: Find the first failing step, compare inputs/environment, inspect logs, and reproduce narrowly.
+46. Q: What if tests pass but production fails? A: Check environment parity, configuration, data, dependencies, rollout health, and missing production-like tests.
+47. Q: How do feature flags help releases? A: They decouple deployment from activation, allowing controlled exposure and fast disablement.
+48. Q: What is progressive delivery? A: Gradual release controlled by metrics, policy, and staged exposure.
+49. Q: How do you handle a bad release? A: Stop promotion, mitigate user impact, roll back or disable, communicate, preserve evidence, and follow up with prevention.
+50. Q: Describe an effective pipeline. A: Fast trusted feedback, reproducible artifact creation, least privilege, observable deployment, and verified recovery.

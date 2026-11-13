@@ -1,0 +1,102 @@
+PROMETHEUS LEARNING AND INTERVIEW GUIDE
+Basic -> Intermediate -> Advanced -> Expert
+==========================================
+
+GOAL
+----
+Prometheus collects and stores time-series metrics, usually by scraping
+HTTP endpoints. Learn metric types, labels, scrape configuration, PromQL,
+alerts, service discovery, cardinality, retention, and failure modes.
+
+LEARNING PATH
+-------------
+Basic:
+  - Time series, timestamp, metric name, labels, scrape target.
+  - Counter, gauge, histogram, summary; Prometheus exposition format.
+Intermediate:
+  - PromQL selectors, range vectors, rate/increase, aggregation,
+    recording rules, alerting rules, exporters, and service discovery.
+Advanced:
+  - Cardinality control, remote write/read, federation, HA, retention,
+    relabeling, scrape health, and alert noise reduction.
+Expert:
+  - SLO-based alerting, capacity planning, multi-tenant governance,
+    resilient metric pipelines, and query performance.
+
+CORE PROMQL EXAMPLES
+--------------------
+    # Select a metric series with a label filter.
+    http_requests_total{job="api", status="500"}
+    # Calculate per-second request rate over five minutes, by service.
+    sum by (service) (rate(http_requests_total[5m]))
+    # Calculate the fraction of requests taking under 0.3 seconds.
+    sum(rate(http_request_duration_seconds_bucket{le="0.3"}[5m]))
+      / sum(rate(http_request_duration_seconds_count[5m]))
+
+REAL-WORLD INCIDENT: PROMETHEUS MEMORY GROWS RAPIDLY
+----------------------------------------------------
+Inspect active series and label cardinality. Search for labels containing
+request IDs, user IDs, full URLs, or other unbounded values. Remove or
+normalize the high-cardinality label at instrumentation/relabeling, then
+review retention and storage sizing. Do not solve an unbounded series
+problem only by increasing memory.
+
+REAL-WORLD INCIDENT: TARGET IS DOWN / METRICS MISSING
+----------------------------------------------------
+Check Prometheus target health and scrape error, then validate DNS,
+network path, endpoint path/port, TLS/auth, and service discovery labels.
+Confirm the app exposes metrics and that relabeling did not drop them.
+Separate exporter failure from Prometheus scrape failure.
+
+50 INTERVIEW QUESTIONS AND ANSWERS
+----------------------------------
+01. Q: What is Prometheus? A: An open-source monitoring system that scrapes and stores labeled time-series data and evaluates queries/rules.
+02. Q: What is a time series? A: Samples of one metric identified by its metric name and label set over time.
+03. Q: What is a label? A: A key/value dimension that identifies a series; keep its possible values bounded.
+04. Q: What is a counter? A: A monotonically increasing value that can reset, such as total requests.
+05. Q: What is a gauge? A: A value that can rise or fall, such as current queue depth.
+06. Q: What is a histogram? A: Observations accumulated into buckets plus count and sum, enabling distribution estimates.
+07. Q: What is a summary? A: A client-side distribution summary with quantiles that generally cannot be aggregated across instances like histogram buckets.
+08. Q: What is a scrape? A: Prometheus periodically fetches metric samples from a configured target.
+09. Q: What is an exporter? A: A service that exposes metrics for a system that does not natively provide Prometheus metrics.
+10. Q: What is a target? A: An endpoint Prometheus attempts to scrape.
+11. Q: What does `up` mean? A: A built-in series indicating whether the last scrape of a target succeeded.
+12. Q: What is PromQL? A: Prometheus's expression language for selecting, transforming, and aggregating time-series data.
+13. Q: Instant vector versus range vector? A: Instant vectors hold latest samples per series; range vectors contain samples over a time interval.
+14. Q: What does `rate()` do? A: Estimates per-second counter increase over a range and adjusts for resets.
+15. Q: `rate()` versus `increase()`? A: `rate` returns a per-second rate; `increase` estimates total increase over the selected interval.
+16. Q: Why apply rate before aggregation? A: It handles counter resets per series before combining results.
+17. Q: What is a recording rule? A: A scheduled PromQL expression whose result is stored as a new series for reuse or speed.
+18. Q: What is an alerting rule? A: A condition evaluated over time that creates alert state and may be sent to Alertmanager.
+19. Q: What is Alertmanager? A: A component that groups, routes, silences, and deduplicates alerts.
+20. Q: What is an alert `for` duration? A: A period a condition must remain true before firing, reducing transient noise.
+21. Q: What is cardinality? A: The number of distinct label combinations/series; high cardinality increases memory and query cost.
+22. Q: Why avoid user IDs in labels? A: They create an unbounded number of series and can expose sensitive identifiers.
+23. Q: How do you measure request latency percentiles? A: Use histogram buckets and `histogram_quantile` over correctly aggregated bucket rates.
+24. Q: How do you calculate error ratio? A: Divide the rate of error requests by total request rate, guarding for zero traffic.
+25. Q: What is service discovery? A: Dynamic target discovery from sources such as Kubernetes, cloud APIs, or static configuration.
+26. Q: What is relabeling? A: A rule stage that changes, keeps, or drops target/sample labels and targets.
+27. Q: Why can a target be missing? A: Discovery, relabeling, DNS, access, endpoint, or configuration errors can remove or block it.
+28. Q: What does `scrape_interval` control? A: How often Prometheus collects samples from a target.
+29. Q: What is scrape timeout? A: The maximum allowed duration for one scrape; it should not exceed the scrape interval.
+30. Q: What is a stale series? A: A series no longer reported or marked stale, so instant queries stop treating it as current.
+31. Q: What is remote write? A: Shipping scraped samples to a compatible remote storage or metrics service.
+32. Q: What is federation? A: Scraping selected aggregated series from another Prometheus server.
+33. Q: What does retention control? A: How long local time-series data is kept, subject to storage and operational limits.
+34. Q: How do you reduce PromQL cost? A: Narrow selectors/time ranges, use recording rules for repeated expensive expressions, and control cardinality.
+35. Q: Why are missing metrics not always zero? A: The series may not have been created, scraped, or retained; use explicit absence handling.
+36. Q: What is an SLI? A: A measured indicator of user-visible service behavior, such as successful request ratio.
+37. Q: What is an SLO? A: A target over time for an SLI, such as a defined availability objective.
+38. Q: What is an error budget? A: The tolerated unreliability implied by an SLO over its measurement window.
+39. Q: How should alerts be designed? A: Alert on actionable user impact or imminent risk, with clear ownership and runbook context.
+40. Q: Why can a histogram percentile be misleading? A: Bucket resolution, low traffic, aggregation mistakes, or missing buckets can distort estimates.
+41. Q: What is Prometheus HA? A: Running independent replicas to reduce monitoring gaps; deduplication may be provided by a compatible query layer.
+42. Q: Does Prometheus automatically deduplicate HA replicas? A: Not as a universal distributed-storage feature; deployments commonly use an external compatible layer.
+43. Q: How do you protect the metrics endpoint? A: Restrict network access and apply supported TLS/auth at the application or proxy.
+44. Q: What is a black-box probe? A: An external check that tests a service from a client-like perspective, often using the blackbox exporter.
+45. Q: Exporter is up but metric is absent. What do you check? A: Exporter output, metric name, scrape labels, metric relabeling, and whether the metric has been emitted.
+46. Q: Why can `rate` return no data? A: Too few samples, wrong metric name/range, scrape gaps, or counter not yet observed.
+47. Q: What is a counter reset? A: A counter returning to a lower value, often after process restart; rate functions account for resets.
+48. Q: How do you monitor Prometheus itself? A: Scrape its own operational metrics and alert on target, rule-evaluation, storage, and resource health.
+49. Q: What is a useful first incident query? A: `up` for scrape state, then relevant application rates, errors, latency, and saturation.
+50. Q: Describe a good metrics design. A: Instrument user outcomes with bounded labels, meaningful types, actionable queries, and tested alert/runbook behavior.
