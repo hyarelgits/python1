@@ -1,0 +1,3 @@
+Acme Bakery is open Monday to Saturday, from 8 AM to 5 PM.
+The bakery is located at 10 Market Street.
+Custom cake orders should be placed at least three days in advance.

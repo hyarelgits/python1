@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+db.sqlite3
+.env
+
+# Ignore generated local vector data.
+chroma_db/
+
+# Keep the sample document but ignore additional private documents.
+data/*
+!data/knowledge.txt

@@ -1,0 +1,732 @@
+UBUNTU VM GUIDE
+Local RAG with LangChain, LangGraph, ChromaDB, FastAPI, Swagger UI, and MCP
+===========================================================================
+
+WHAT THIS GUIDE BUILDS
+----------------------
+This guide creates a small local question-answering application. It does not
+train a new AI model. Instead, it searches your own text documents and asks a
+local language model to answer from the matching passages.
+
+The parts have these jobs:
+  - Ollama runs the local chat model and the local text-embedding model.
+  - LangChain loads and splits documents, creates embeddings, and talks to
+Ollama and ChromaDB.
+  - ChromaDB stores document embeddings on disk and finds similar passages.
+  - LangGraph connects the retrieval step to the answer-generation step.
+  - FastAPI exposes the RAG workflow as an HTTP API.
+  - Swagger UI lets you try the FastAPI endpoint in a browser.
+  - MCP exposes the same RAG workflow as a tool for MCP-compatible clients.
+
+At the end, the services use these local addresses:
+  - FastAPI: http://127.0.0.1:8000
+  - Swagger UI: http://127.0.0.1:8000/docs
+  - MCP Streamable HTTP endpoint: http://127.0.0.1:8001/mcp
+  - Ollama API: http://127.0.0.1:11434
+
+The FastAPI and MCP servers are separate processes. Swagger UI tests the
+FastAPI HTTP endpoint; MCP clients connect to the MCP endpoint. MCP does not
+appear as a Swagger route.
+
+READY PROJECT: DOWNLOAD FROM GITHUB
+----------------------------------
+This repository contains the finished starter project. To use the ready
+project in your Ubuntu VM, clone the project branch instead of manually
+creating the Python files:
+
+git clone --branch hyarelgits-small-business-website https://github.com/hyarelgits/python1.git ubuntu-rag
+cd ubuntu-rag
+
+The ready project already contains app.py, ingest.py, mcp_server.py,
+rag_config.py, requirements.txt, and the sample document. Do not copy the
+manual code blocks later in this file over those files unless you intentionally
+want to rebuild them. After cloning, follow the quick-start in README.md:
+install prerequisites, activate a Python 3.11+ virtual environment, install
+requirements, install/pull the Ollama models, run python ingest.py, then start
+FastAPI and MCP.
+
+The numbered sections below explain every step and also show how to create the
+files manually if you are not using the GitHub clone.
+
+HOW TO FOLLOW THIS PROJECT ONE STEP AT A TIME
+--------------------------------------------
+Do the numbered sections below in order. Complete only the current section,
+run its check, and then continue to the next one after it succeeds. The guide
+is also designed for working with an assistant one step at a time: after a
+section succeeds, share its check output if you want help with the next
+section.
+
+The project checkpoints are:
+  Step 1  - Check VM and Python prerequisites (section 1).
+  Step 2  - Install Ubuntu system packages (section 2).
+  Step 3  - Create the project folder and virtual environment (section 3).
+  Step 4  - Install Ollama and download the local models (section 4).
+  Step 5  - Install Python requirements (section 5).
+  Step 6  - Add a sample text document (section 6).
+  Step 7  - Create ingest.py (section 7).
+  Step 8  - Create app.py (section 8).
+  Step 9  - Create mcp_server.py (section 9).
+  Step 10 - Check the project files and Python dependencies (section 10).
+  Step 11 - Build the ChromaDB index (section 11).
+  Step 12 - Start FastAPI and test it in Swagger UI (section 12).
+  Step 13 - Start and test the MCP server (section 13).
+  Step 14 - Optionally connect from your computer using an SSH tunnel
+            (section 14).
+  Step 15 - Use troubleshooting checks as needed (section 15).
+
+IF AN ERROR APPEARS
+-------------------
+Stop at the first failing command. Do not continue to later sections or
+randomly change package versions. To get help, share:
+  - The step and section number you are working on.
+  - The exact command you ran.
+  - The complete error or traceback, including the lines above the final error.
+  - The output of python --version and pwd, when relevant.
+  - Which terminal is running Ollama, FastAPI, or MCP, if the error involves
+    one of those services.
+
+Remove passwords, access tokens, private keys, and private document contents
+before sharing output. Do not delete .venv/ or chroma_db/ unless a specific
+troubleshooting step tells you to do so.
+
+
+1. CHECK THE VM PREREQUISITES
+-----------------------------
+Recommended starting point:
+  - Ubuntu 24.04 LTS or another Ubuntu with Python 3.11 or newer.
+  - 8 GB RAM recommended for the 3-billion-parameter chat model used below.
+  - At least 10 GB of free disk space for Python packages and model files.
+  - Internet access for installing packages and downloading models.
+  - A CPU is enough; a supported GPU can make model answers faster.
+
+The MCP Python SDK used in this guide requires Python 3.11 or newer. Check
+Ubuntu and Python first:
+
+lsb_release -a
+python3 --version
+
+If Python is 3.11 or newer, continue to section 2.
+
+If Python is older than 3.11, use a Python 3.12 managed by uv. Install the
+basic system packages first, then use the uv commands in section 3 instead of
+creating the virtual environment with system Python.
+
+
+2. INSTALL UBUNTU SYSTEM PACKAGES
+---------------------------------
+Run these commands in the Ubuntu VM terminal. They install Python tooling,
+virtual-environment support, curl, and certificate files.
+
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip curl ca-certificates
+
+Check Python again:
+
+python3 --version
+
+If Python is 3.11 or newer, the normal virtual-environment steps in section 3
+will work. If it is older, follow the uv alternative in section 3.
+
+
+3. CREATE THE PROJECT FOLDER AND PYTHON ENVIRONMENT
+---------------------------------------------------
+These commands make a new folder in your Ubuntu home directory. All later
+commands in this guide assume you are inside this folder.
+
+mkdir -p ~/ubuntu-rag/data
+cd ~/ubuntu-rag
+
+NORMAL METHOD: use this when python3 is 3.11 or newer.
+The virtual environment keeps this app's Python packages separate from Ubuntu.
+
+python3 -m venv .venv
+source .venv/bin/activate
+python --version
+
+The active terminal prompt should now show (.venv). Each new terminal window
+must activate the environment again with:
+
+cd ~/ubuntu-rag
+source .venv/bin/activate
+
+ALTERNATIVE METHOD: use this if Ubuntu's system Python is older than 3.11.
+These commands install uv for your user, download Python 3.12 with uv, and
+create the virtual environment with that Python version. Run them from
+~/ubuntu-rag after section 2.
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source "$HOME/.local/bin/env"
+uv python install 3.12
+uv venv --python 3.12 .venv
+source .venv/bin/activate
+python --version
+
+Do not continue until the last command reports Python 3.11 or newer.
+
+
+4. INSTALL OLLAMA AND DOWNLOAD LOCAL MODELS
+-------------------------------------------
+Ollama serves the local models. The chat model writes answers, and the
+embedding model converts document passages and questions into vectors for
+similarity search.
+
+Install Ollama from its official installer:
+
+curl -fsSL https://ollama.com/install.sh | sh
+
+On Ubuntu with systemd, enable and start its service:
+
+sudo systemctl enable --now ollama
+systemctl status ollama --no-pager
+
+Download the models. The chat model below is about 3B parameters; the
+embedding model is separate and is used by ChromaDB:
+
+ollama pull llama3.2:3b
+ollama pull nomic-embed-text
+ollama list
+
+Check that the chat model starts:
+
+ollama run llama3.2:3b
+
+At the Ollama prompt, ask a short question. Exit the Ollama prompt with:
+
+/bye
+
+If the VM has limited memory, use the smaller chat model instead:
+
+ollama pull llama3.2:1b
+
+If you choose the 1B model, change "llama3.2:3b" to "llama3.2:1b" in
+app.py in section 8. The embedding model name stays "nomic-embed-text".
+
+If systemctl is unavailable in your VM, start Ollama in its own terminal with:
+
+ollama serve
+
+Leave that terminal running while you use the RAG app.
+
+
+5. CREATE requirements.txt AND INSTALL PYTHON PACKAGES
+------------------------------------------------------
+Make sure the virtual environment is active and the current folder is
+~/ubuntu-rag. This file lists the app's Python dependencies:
+
+cat > requirements.txt <<'EOF'
+# LangChain's core framework and common integrations.
+langchain
+# Connects LangChain chat and embedding models to Ollama.
+langchain-ollama
+# Connects LangChain to the Chroma vector database.
+langchain-chroma
+# Splits long documents into smaller searchable passages.
+langchain-text-splitters
+# Runs the retrieval and answer steps as a graph.
+langgraph
+# Provides the HTTP API and request validation.
+fastapi
+# Runs the FastAPI application as an HTTP server.
+uvicorn[standard]
+# Official MCP Python SDK; requires Python 3.11 or newer.
+mcp
+EOF
+
+Install the requirements into the active virtual environment:
+
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+Check that the important packages are installed:
+
+python -m pip show langchain langgraph langchain-chroma fastapi uvicorn mcp
+
+
+6. ADD TEXT DOCUMENTS TO THE KNOWLEDGE BASE
+-------------------------------------------
+This starter app reads UTF-8 .txt files under the data/ directory. Replace
+the sample text below with information you want the RAG app to search. Do not
+put secrets or private information in sample files.
+
+File to create: data/knowledge.txt
+The cat command writes this text file relative to ~/ubuntu-rag.
+
+cat > data/knowledge.txt <<'EOF'
+Acme Bakery is open Monday to Saturday, from 8 AM to 5 PM.
+The bakery is located at 10 Market Street.
+Custom cake orders should be placed at least three days in advance.
+EOF
+
+Add more .txt files inside data/ or a subdirectory under data/. The indexer
+will discover them automatically.
+
+
+7. CREATE THE DOCUMENT INDEXER
+------------------------------
+File to create: ingest.py
+This program reads the text files, splits them into overlapping passages,
+creates embeddings with Ollama, and saves the passages in ChromaDB.
+The comments explain the purpose of each section.
+
+cat > ingest.py <<'EOF'
+# hashlib creates repeatable Chroma IDs when the same files are indexed again.
+import hashlib
+# Path handles file and folder paths safely on Ubuntu.
+from pathlib import Path
+
+# Chroma stores embedded document passages on disk.
+from langchain_chroma import Chroma
+# Document pairs text with metadata such as its source filename.
+from langchain_core.documents import Document
+# OllamaEmbeddings calls the local embedding model.
+from langchain_ollama import OllamaEmbeddings
+# The splitter makes document-sized text small enough for retrieval.
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# ROOT is the folder containing this Python file.
+ROOT = Path(__file__).resolve().parent
+# DATA_DIR is where source .txt files are placed.
+DATA_DIR = ROOT / "data"
+# DB_DIR is where Chroma will persist the vector database.
+DB_DIR = ROOT / "chroma_db"
+
+# This list will hold each non-empty source text and its filename.
+documents = []
+# Sort files so indexing order is predictable.
+for path in sorted(DATA_DIR.rglob("*.txt")):
+    # Read each document as UTF-8 and ignore surrounding whitespace.
+    text = path.read_text(encoding="utf-8").strip()
+    # Do not add empty files to the vector database.
+    if text:
+        # Keep a project-relative filename as source metadata.
+        source = str(path.relative_to(ROOT))
+        # Wrap text and its source label in a LangChain Document.
+        documents.append(Document(page_content=text, metadata={"source": source}))
+
+# Stop with a clear message if the user has not added any text files.
+if not documents:
+    raise SystemExit("No non-empty .txt files found in the data/ folder.")
+
+# Split long text into passages and keep some overlap between neighboring
+# passages so sentences near a boundary retain useful context.
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,
+    chunk_overlap=120,
+)
+# Convert full documents into searchable passages.
+chunks = splitter.split_documents(documents)
+
+# Use the same embedding model in ingest.py and app.py.
+embeddings = OllamaEmbeddings(model="nomic-embed-text")
+# Open or create a persistent Chroma collection.
+store = Chroma(
+    collection_name="ubuntu_rag",
+    embedding_function=embeddings,
+    persist_directory=str(DB_DIR),
+)
+
+# Build stable IDs from each source filename and passage number.
+ids = []
+for index, chunk in enumerate(chunks):
+    # The source and index make each passage's ID repeatable.
+    key = f"{chunk.metadata['source']}:{index}"
+    # Chroma IDs are hashes so filenames do not create awkward IDs.
+    ids.append(hashlib.sha256(key.encode("utf-8")).hexdigest())
+
+# Add the passages and their IDs to the persistent collection.
+store.add_documents(chunks, ids=ids)
+# Report what was indexed so the user can verify this step.
+print(f"Indexed {len(chunks)} passages from {len(documents)} text file(s).")
+EOF
+
+Run the indexer from ~/ubuntu-rag with the virtual environment active:
+
+python ingest.py
+
+The first run creates chroma_db/ and calculates document embeddings. If you
+change a file and run the indexer again, matching passage IDs are updated. If
+you remove a source file or need to rebuild everything from scratch, first
+confirm you are in ~/ubuntu-rag, then remove only the generated index:
+
+pwd
+rm -r ./chroma_db
+python ingest.py
+
+Do not run the removal command outside this project folder.
+
+
+8. CREATE THE FASTAPI + LANGGRAPH APPLICATION
+---------------------------------------------
+File to create: app.py
+This file defines the RAG graph and a FastAPI API. The graph retrieves up to
+four passages, then asks Ollama to answer only from those passages. FastAPI
+provides a health endpoint and a POST /query endpoint.
+
+cat > app.py <<'EOF'
+# Path locates this project's persistent Chroma database.
+from pathlib import Path
+# TypedDict documents the fields that move through the LangGraph state.
+from typing import TypedDict
+
+# FastAPI creates the web API; HTTPException returns an HTTP error response.
+from fastapi import FastAPI, HTTPException
+# Chroma reconnects to the vector collection created by ingest.py.
+from langchain_chroma import Chroma
+# Document is the type of each retrieved passage.
+from langchain_core.documents import Document
+# ChatOllama generates answers; OllamaEmbeddings embeds query text.
+from langchain_ollama import ChatOllama, OllamaEmbeddings
+# StateGraph builds the retrieval-and-answer workflow.
+from langgraph.graph import END, START, StateGraph
+# Pydantic validates FastAPI request and response data.
+from pydantic import BaseModel, Field
+
+# ROOT is the folder containing app.py.
+ROOT = Path(__file__).resolve().parent
+# DB_DIR must match the directory used in ingest.py.
+DB_DIR = ROOT / "chroma_db"
+
+# Give a useful error when the user has not indexed any documents yet.
+if not DB_DIR.is_dir():
+    raise RuntimeError("ChromaDB index not found. Run `python ingest.py` first.")
+
+# Initialize the embedding model used to find similar document passages.
+embeddings = OllamaEmbeddings(model="nomic-embed-text")
+# Open the same persistent collection that ingest.py populated.
+store = Chroma(
+    collection_name="ubuntu_rag",
+    embedding_function=embeddings,
+    persist_directory=str(DB_DIR),
+)
+# Initialize the local chat model; change this name to llama3.2:1b if needed.
+chat_model = ChatOllama(model="llama3.2:3b", temperature=0)
+
+# Define values passed between the graph nodes.
+class RAGState(TypedDict):
+    question: str
+    context: list[Document]
+    answer: str
+
+# Define and validate the JSON accepted by POST /query.
+class QueryRequest(BaseModel):
+    # Reject empty text and cap input size for this starter application.
+    question: str = Field(min_length=1, max_length=4000)
+
+# Define the JSON response returned by the query endpoint.
+class QueryResponse(BaseModel):
+    answer: str
+    sources: list[str]
+
+# This graph node searches Chroma for the four closest text passages.
+def retrieve(state: RAGState) -> dict:
+    # The same embedding model converts the question to a vector.
+    documents = store.similarity_search(state["question"], k=4)
+    # LangGraph merges this context into the graph state.
+    return {"context": documents}
+
+# This graph node asks the local chat model to answer from retrieved text.
+def generate_answer(state: RAGState) -> dict:
+    # Include the source filename before each passage for answer citations.
+    context = "\n\n".join(
+        f"Source: {doc.metadata.get('source', 'unknown')}\n{doc.page_content}"
+        for doc in state["context"]
+    )
+    # Tell the model not to invent information absent from the context.
+    prompt = f"""Answer using only the supplied context.
+If the context does not contain the answer, say you don't know.
+Mention the source file when useful.
+
+Context:
+{context}
+
+Question:
+{state["question"]}
+"""
+    # Ask Ollama to generate the answer.
+    response = chat_model.invoke(prompt)
+    # Pass the answer to the final graph state.
+    return {"answer": response.content}
+
+# Create the graph with the state fields declared above.
+workflow = StateGraph(RAGState)
+# Register the retrieval and answer functions as graph nodes.
+workflow.add_node("retrieve", retrieve)
+workflow.add_node("generate_answer", generate_answer)
+# Start by retrieving passages.
+workflow.add_edge(START, "retrieve")
+# Generate an answer after retrieval completes.
+workflow.add_edge("retrieve", "generate_answer")
+# End the graph after the answer is generated.
+workflow.add_edge("generate_answer", END)
+# Compile the graph so it can be invoked by the API or MCP server.
+rag = workflow.compile()
+
+# Create the FastAPI application shown in Swagger UI.
+app = FastAPI(title="Local RAG API", version="1.0.0")
+
+# Provide a basic endpoint for checking that the FastAPI process responds.
+@app.get("/health")
+def health() -> dict:
+    return {"status": "ok"}
+
+# Accept a user's question and return the answer with source filenames.
+@app.post("/query", response_model=QueryResponse)
+def query_documents(request: QueryRequest) -> QueryResponse:
+    # Reject strings that contain only spaces.
+    question = request.question.strip()
+    if not question:
+        raise HTTPException(status_code=422, detail="Question cannot be blank.")
+    # Run the same RAG graph that the MCP tool will call.
+    result = rag.invoke({"question": question})
+    # Collect unique source filenames from the passages used as context.
+    sources = sorted(
+        {doc.metadata.get("source", "unknown") for doc in result["context"]}
+    )
+    # FastAPI serializes this Pydantic response to JSON.
+    return QueryResponse(answer=result["answer"], sources=sources)
+EOF
+
+
+9. CREATE THE MCP SERVER
+------------------------
+File to create: mcp_server.py
+This file exposes the same compiled RAG graph as an MCP tool named
+"ask_documents". MCP clients can discover and call this tool. Streamable HTTP
+is used because the MCP server runs on the Ubuntu VM rather than being
+launched as a local desktop subprocess.
+
+The MCP server uses port 8001 so it does not conflict with FastAPI on port
+8000. It listens only on 127.0.0.1 for safer VM access.
+
+cat > mcp_server.py <<'EOF'
+# MCPServer creates an MCP server using the official Python SDK.
+from mcp.server import MCPServer
+# Import the exact graph used by FastAPI rather than making another graph.
+from app import rag
+
+# Give this MCP server a name clients can display.
+mcp = MCPServer("Local RAG")
+
+# Register a function as a tool that MCP clients can discover and call.
+@mcp.tool()
+def ask_documents(question: str) -> str:
+    # The docstring is the tool description shown to MCP clients and models.
+    """Answer a question using the locally indexed documents and cite sources."""
+    # Remove surrounding whitespace before querying the RAG graph.
+    question = question.strip()
+    # Reject empty questions with a clear tool error.
+    if not question:
+        raise ValueError("Question cannot be blank.")
+    # Run the same retrieval-and-answer graph as the FastAPI endpoint.
+    result = rag.invoke({"question": question})
+    # Gather each distinct source filename used in retrieved context.
+    sources = sorted(
+        {doc.metadata.get("source", "unknown") for doc in result["context"]}
+    )
+    # Return readable text so any MCP client can display the answer and sources.
+    source_text = ", ".join(sources) if sources else "none"
+    return f"{result['answer']}\nSources: {source_text}"
+
+# Start a Streamable HTTP MCP endpoint when this file runs directly.
+if __name__ == "__main__":
+    # run() uses the host, port, and /mcp path for this MCP service.
+    mcp.run(
+        transport="streamable-http",
+        host="127.0.0.1",
+        port=8001,
+    )
+EOF
+
+
+10. CHECK THE PROJECT FILES
+---------------------------
+From ~/ubuntu-rag, list the files to make sure they were created:
+
+find . -maxdepth 2 -type f -not -path './.venv/*' -not -path './chroma_db/*'
+
+Expected files include:
+  - requirements.txt
+  - ingest.py
+  - app.py
+  - mcp_server.py
+  - data/knowledge.txt
+
+Check the Python interpreter and installed dependencies:
+
+python --version
+python -m pip check
+
+If python -m pip check reports conflicts, read the message before proceeding.
+
+
+11. BUILD THE CHROMA INDEX
+--------------------------
+Make sure Ollama is running, both model names appear in `ollama list`, and the
+virtual environment is active. From ~/ubuntu-rag, run:
+
+python ingest.py
+
+Expected output looks similar to:
+
+Indexed 1 passages from 1 text file(s).
+
+The passage count can differ depending on the size of your documents. This
+step must finish successfully before starting the API.
+
+
+12. START FASTAPI AND USE SWAGGER UI
+------------------------------------
+Open terminal 1 inside the Ubuntu VM. Activate the virtual environment and
+start FastAPI:
+
+cd ~/ubuntu-rag
+source .venv/bin/activate
+uvicorn app:app --host 127.0.0.1 --port 8000 --reload
+
+Keep terminal 1 running. On the Ubuntu VM itself, open a browser to:
+
+http://127.0.0.1:8000/docs
+
+In Swagger UI:
+  1. Expand POST /query.
+  2. Click "Try it out".
+  3. Replace the example request with:
+
+    {
+      "question": "When is the bakery open?"
+    }
+
+  4. Click "Execute".
+  5. Check the answer and the sources array in the response.
+
+Swagger also lists GET /health. Click it and use "Try it out" to check that
+the FastAPI server responds with {"status":"ok"}.
+
+You can also test the REST API from another VM terminal:
+
+curl -X POST http://127.0.0.1:8000/query \
+  -H 'Content-Type: application/json' \
+  -d '{"question":"When is the bakery open?"}'
+
+
+13. START AND TEST THE MCP SERVER
+---------------------------------
+Open terminal 2 inside the Ubuntu VM. Activate the same virtual environment
+and start the MCP server:
+
+cd ~/ubuntu-rag
+source .venv/bin/activate
+python mcp_server.py
+
+Keep terminal 2 running. The MCP endpoint is:
+
+http://127.0.0.1:8001/mcp
+
+To test it with the official Python MCP client, open terminal 3, activate the
+environment, and run this client script:
+
+cd ~/ubuntu-rag
+source .venv/bin/activate
+python - <<'PY'
+# asyncio runs the asynchronous MCP client calls.
+import asyncio
+# Client connects to a server using the MCP Streamable HTTP transport.
+from mcp import Client
+
+# Define an async function so it can open and close the MCP connection.
+async def main():
+    # Connect to the MCP endpoint on the Ubuntu VM.
+    async with Client("http://127.0.0.1:8001/mcp") as client:
+        # Call the tool using its registered name and required question input.
+        result = await client.call_tool(
+            "ask_documents",
+            {"question": "When is the bakery open?"},
+        )
+        # Print the text returned by the MCP tool.
+        print(result.content)
+
+# Start the async client function.
+asyncio.run(main())
+PY
+
+The result should contain the answer and a source filename such as
+"data/knowledge.txt".
+
+
+14. ACCESS THE VM SERVICES FROM YOUR OWN COMPUTER
+-------------------------------------------------
+If your browser is on your own computer and not inside Ubuntu, use an SSH
+tunnel. Run this command in a terminal on your own computer, replacing the
+username and VM_IP with your Ubuntu VM login name and address:
+
+ssh -L 8000:127.0.0.1:8000 -L 8001:127.0.0.1:8001 username@VM_IP
+
+Keep the SSH connection open. On your computer, open Swagger UI at:
+
+http://127.0.0.1:8000/docs
+
+An MCP client on your computer can connect to:
+
+http://127.0.0.1:8001/mcp
+
+The SSH tunnel carries both local connections to the VM. Do not expose
+Uvicorn, the MCP server, or Ollama directly to the public internet for this
+starter project. Both app services intentionally bind to 127.0.0.1.
+
+
+15. COMMON CHECKS AND TROUBLESHOOTING
+-------------------------------------
+Python or MCP installation says Python is too old:
+  - Confirm `python --version` while the virtual environment is active.
+  - Use Python 3.11 or newer; follow the uv alternative in section 3.
+
+The app says the Chroma index was not found:
+  - Run `cd ~/ubuntu-rag`.
+  - Activate `.venv`.
+  - Run `python ingest.py`.
+
+Ollama connection refused:
+  - Check `systemctl status ollama --no-pager`.
+  - Check `ollama list`.
+  - If systemd is unavailable, run `ollama serve` in another terminal.
+  - Check the local Ollama API with:
+
+    curl http://127.0.0.1:11434/api/tags
+
+The model is not found:
+  - Run `ollama pull llama3.2:3b`.
+  - Run `ollama pull nomic-embed-text`.
+  - Check spelling with `ollama list`.
+
+The answer says it does not know:
+  - Check that the answer is present in a file under data/.
+  - Run `python ingest.py` after adding the file.
+  - Ask a question that uses words or facts from the file.
+
+The VM is slow or runs out of memory:
+  - Try `llama3.2:1b` instead of `llama3.2:3b`.
+  - Change the ChatOllama model in app.py, then restart both services.
+  - Keep `nomic-embed-text` for embeddings.
+
+Port 8000 or 8001 is already in use:
+  - Stop the other process using the port, or choose another port.
+  - If you change a port, update the matching browser, curl, MCP URL, and SSH
+tunnel command in this guide.
+
+
+FINAL PROJECT LAYOUT
+--------------------
+After following the guide, the project should look like this:
+
+ubuntu-rag/
+|-- .venv/                 Python virtual environment (created by venv/uv)
+|-- app.py                 FastAPI API and shared LangGraph RAG workflow
+|-- chroma_db/             Persistent Chroma database (created by ingest.py)
+|-- data/
+|   `-- knowledge.txt      Sample document; add your own .txt files here
+|-- ingest.py              Reads, splits, embeds, and indexes .txt files
+|-- mcp_server.py          MCP tool server using the same RAG workflow
+`-- requirements.txt       Python package list
+
+When finished, keep Ollama, FastAPI, and MCP running in their respective
+terminals. Stop a server with Ctrl+C in the terminal where it is running.
