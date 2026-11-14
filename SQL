@@ -1,0 +1,812 @@
+SQL - COMPLETE NOTES - FROM INSTALLATION TO 20 TOPICS
+For Senior DevOps + Backend + AI Role
+Pure English, Simple, Brother Style
+
+================================================================
+TOPIC 0 - INSTALLATION OF SQL / PostgreSQL
+================================================================
+
+CONCEPT:
+SQL is language. PostgreSQL is database software.
+You cannot install SQL alone. You install PostgreSQL software,
+then you use SQL language inside it.
+
+Think like this:
+SQL = English language
+PostgreSQL = Book where you write English
+
+INSTALLATION - 3 WAYS:
+
+WAY 1 - UBUNTU - For Your Laptop / Codespace - Best For You
+------------------------------------------------------------
+Step 1 - Update:
+sudo apt update
+
+Step 2 - Install PostgreSQL:
+sudo apt install postgresql postgresql-contrib -y
+
+Step 3 - Start PostgreSQL:
+sudo service postgresql start
+
+Step 4 - Login as postgres user:
+sudo -u postgres psql
+
+You will see:
+postgres=#
+
+Now you can run SQL. Example:
+CREATE DATABASE my_loan_db;
+\c my_loan_db
+
+WAY 2 - DOCKER - For DevOps + Real Project - Best For Your RAG Projects
+------------------------------------------------------------------------
+Step 1 - Run PostgreSQL in Docker:
+docker run --name my-postgres -e POSTGRES_PASSWORD=1234 -p 5432:5432 -d postgres
+
+Explanation:
+--name my-postgres = Name of container
+-e POSTGRES_PASSWORD=1234 = Password is 1234
+-p 5432:5432 = Port
+-d postgres = Image name, run in background
+
+Step 2 - Go Inside PostgreSQL:
+docker exec -it my-postgres psql -U postgres
+
+Step 3 - Check:
+\l  -> List all databases
+
+WAY 3 - SQLITE - Easiest - No Install Server - For Practice Only
+-----------------------------------------------------------------
+Step 1 - Install:
+sudo apt install sqlite3
+
+Step 2 - Create file:
+sqlite3 my_loan.db
+
+Step 3 - Run SQL directly:
+CREATE TABLE loan_table (name TEXT, cibil INT);
+
+Note: SQLite uses same SQL, but no server, no password. Good for practice.
+For real project, use PostgreSQL.
+
+After Installation, Create First Database and Table:
+------------------------------------------------------
+CREATE DATABASE loan_db;
+\c loan_db
+
+CREATE TABLE loan_table (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    cibil INT,
+    salary INT,
+    city VARCHAR(50)
+);
+
+Insert Sample Data For All Examples Below:
+--------------------------------------------
+INSERT INTO loan_table VALUES (1, 'Hyarel', 750, 80000, 'Mumbai');
+INSERT INTO loan_table VALUES (2, 'Priya', 680, 60000, 'Delhi');
+INSERT INTO loan_table VALUES (3, 'Rahul', 550, 40000, 'Pune');
+INSERT INTO loan_table VALUES (4, 'Sneha', 720, 90000, 'Mumbai');
+INSERT INTO loan_table VALUES (5, 'Amit', 600, 50000, 'Delhi');
+
+Now all 20 topics below use this same loan_table.
+
+================================================================
+TOPIC 1 - SELECT - Get Data
+================================================================
+CONCEPT:
+SELECT is used to get data from table. Like you ask - Give me data.
+
+COMMAND:
+SELECT column_name FROM table_name;
+
+EXAMPLE CODE:
+-- Get all columns, all rows
+SELECT * FROM loan_table;
+
+-- Get only name and cibil
+SELECT name, cibil FROM loan_table;
+
+OUTPUT:
+id | name   | cibil | salary | city
+1  | Hyarel | 750   | 80000  | Mumbai
+2  | Priya  | 680   | 60000  | Delhi
+3  | Rahul  | 550   | 40000  | Pune
+4  | Sneha  | 720   | 90000  | Mumbai
+5  | Amit   | 600   | 50000  | Delhi
+
+PROJECT USE:
+In FastAPI, when user opens dashboard, you use SELECT to get all loan customers from PostgreSQL.
+
+INTERVIEW ANSWER:
+SELECT is used to fetch data from table.
+
+================================================================
+TOPIC 2 - WHERE - Filter Data
+================================================================
+CONCEPT:
+WHERE filters rows. Only rows that match condition will come.
+Without WHERE, you get all rows. With WHERE, you get only useful rows.
+
+COMMAND:
+SELECT * FROM table WHERE condition;
+
+EXAMPLE CODE:
+-- Only CIBIL > 600
+SELECT * FROM loan_table WHERE cibil > 600;
+
+-- Only Mumbai customers
+SELECT * FROM loan_table WHERE city = 'Mumbai';
+
+OUTPUT for first query:
+Hyarel 750 Mumbai
+Priya  680 Delhi
+Sneha  720 Mumbai
+Amit   600 Delhi - No, 600 is not > 600, so Amit will NOT come. Only 3 rows.
+
+PROJECT USE:
+In RAG project, when user asks for high CIBIL customers, you use WHERE cibil > 600.
+
+INTERVIEW ANSWER:
+WHERE is used to filter rows based on condition.
+
+================================================================
+TOPIC 3 - AND, OR, NOT - Multiple Conditions
+================================================================
+CONCEPT:
+AND = Both conditions must be true.
+OR = Any one condition true is enough.
+NOT = Opposite.
+
+COMMAND:
+SELECT * FROM table WHERE condition1 AND condition2;
+SELECT * FROM table WHERE condition1 OR condition2;
+SELECT * FROM table WHERE NOT condition;
+
+EXAMPLE CODE:
+-- AND - CIBIL > 600 AND city Mumbai - Both must be true
+SELECT * FROM loan_table WHERE cibil > 600 AND city = 'Mumbai';
+
+OUTPUT:
+Hyarel 750 Mumbai
+Sneha  720 Mumbai
+
+-- OR - City Mumbai OR Delhi
+SELECT * FROM loan_table WHERE city = 'Mumbai' OR city = 'Delhi';
+
+OUTPUT:
+Hyarel, Priya, Sneha, Amit - 4 rows, Rahul Pune will not come.
+
+-- NOT - NOT Mumbai
+SELECT * FROM loan_table WHERE NOT city = 'Mumbai';
+
+OUTPUT:
+Priya, Rahul, Amit
+
+PROJECT USE:
+Filter Mumbai customers with high CIBIL for campaign.
+
+INTERVIEW ANSWER:
+AND means both true, OR means any one true, NOT means opposite.
+
+================================================================
+TOPIC 4 - ORDER BY - Sort Data
+================================================================
+CONCEPT:
+ORDER BY sorts data.
+ASC = Ascending, Small to Big, A to Z, Default.
+DESC = Descending, Big to Small, Z to A.
+
+COMMAND:
+SELECT * FROM table ORDER BY column ASC / DESC;
+
+EXAMPLE CODE:
+-- Highest CIBIL first
+SELECT * FROM loan_table ORDER BY cibil DESC;
+
+OUTPUT:
+Hyarel 750
+Sneha  720
+Priya  680
+Amit   600
+Rahul  550
+
+-- Lowest salary first
+SELECT * FROM loan_table ORDER BY salary ASC;
+
+PROJECT USE:
+Show top customers first in dashboard.
+
+INTERVIEW ANSWER:
+ORDER BY sorts result. ASC is small to big, DESC is big to small.
+
+================================================================
+TOPIC 5 - LIMIT - Limit Rows
+================================================================
+CONCEPT:
+LIMIT shows only few rows. When table has 1 Lakh rows, you don't want all rows. You want top 10.
+
+COMMAND:
+SELECT * FROM table ORDER BY column DESC LIMIT number;
+
+EXAMPLE CODE:
+-- Top 3 highest CIBIL
+SELECT * FROM loan_table ORDER BY cibil DESC LIMIT 3;
+
+OUTPUT:
+Hyarel 750
+Sneha  720
+Priya  680
+
+-- First 2 rows only
+SELECT * FROM loan_table LIMIT 2;
+
+PROJECT USE:
+In FastAPI, show top 10 customers, not 1 Lakh customers.
+
+INTERVIEW ANSWER:
+LIMIT is used to limit number of rows.
+
+================================================================
+TOPIC 6 - DISTINCT - No Duplicate
+================================================================
+CONCEPT:
+DISTINCT removes duplicate values. Shows only unique values.
+
+COMMAND:
+SELECT DISTINCT column FROM table;
+
+EXAMPLE CODE:
+-- Unique cities
+SELECT DISTINCT city FROM loan_table;
+
+OUTPUT:
+Mumbai
+Delhi
+Pune
+
+Without DISTINCT, city would be: Mumbai, Delhi, Pune, Mumbai, Delhi - 5 rows with duplicate.
+With DISTINCT, only 3 unique cities.
+
+PROJECT USE:
+Get list of all cities where bank has customers, without duplicate.
+
+INTERVIEW ANSWER:
+DISTINCT removes duplicate values.
+
+================================================================
+TOPIC 7 - IN, BETWEEN, LIKE - Special Filter
+================================================================
+CONCEPT:
+IN = Value is in list.
+BETWEEN = Value between two values, including both.
+LIKE = Pattern matching, % means anything, _ means one character.
+
+COMMAND:
+SELECT * FROM table WHERE column IN (value1, value2);
+SELECT * FROM table WHERE column BETWEEN value1 AND value2;
+SELECT * FROM table WHERE column LIKE 'pattern';
+
+EXAMPLE CODE:
+-- IN
+SELECT * FROM loan_table WHERE city IN ('Mumbai', 'Delhi');
+
+-- BETWEEN - CIBIL 600 to 750, including 600 and 750
+SELECT * FROM loan_table WHERE cibil BETWEEN 600 AND 750;
+
+OUTPUT:
+Hyarel 750, Priya 680, Sneha 720, Amit 600 - 4 rows. Rahul 550 will not come.
+
+-- LIKE - Name starts with H
+SELECT * FROM loan_table WHERE name LIKE 'H%';
+
+OUTPUT:
+Hyarel
+
+-- LIKE - Name contains 'a'
+SELECT * FROM loan_table WHERE name LIKE '%a%';
+
+OUTPUT:
+Hyarel, Priya, Rahul, Sneha, Amit - All have a.
+
+PROJECT USE:
+IN for cities, BETWEEN for CIBIL range, LIKE for search name.
+
+INTERVIEW ANSWER:
+IN checks list, BETWEEN checks range, LIKE checks pattern.
+
+================================================================
+TOPIC 8 - Aggregate Functions - COUNT, SUM, AVG, MIN, MAX
+================================================================
+CONCEPT:
+Aggregate = One answer from many rows.
+COUNT = How many rows?
+SUM = Total of column.
+AVG = Average.
+MIN = Smallest value.
+MAX = Biggest value.
+
+COMMAND:
+SELECT COUNT(*) FROM table;
+SELECT SUM(column) FROM table;
+SELECT AVG(column) FROM table;
+SELECT MIN(column) FROM table;
+SELECT MAX(column) FROM table;
+
+EXAMPLE CODE:
+SELECT COUNT(*) FROM loan_table;
+-- OUTPUT: 5
+
+SELECT AVG(cibil) FROM loan_table;
+-- OUTPUT: 660  (750+680+550+720+600 = 3300 / 5 = 660)
+
+SELECT SUM(salary) FROM loan_table;
+-- OUTPUT: 320000
+
+SELECT MIN(cibil) FROM loan_table;
+-- OUTPUT: 550
+
+SELECT MAX(cibil) FROM loan_table;
+-- OUTPUT: 750
+
+PROJECT USE:
+How many customers? Average CIBIL? Total salary? For dashboard and Matplotlib graph.
+
+INTERVIEW ANSWER:
+Aggregate functions give one result from many rows - COUNT, SUM, AVG, MIN, MAX.
+
+================================================================
+TOPIC 9 - GROUP BY - Group Data
+================================================================
+CONCEPT:
+GROUP BY groups same values together, then you apply aggregate on each group.
+Like Pandas groupby.
+
+COMMAND:
+SELECT column, COUNT(*) FROM table GROUP BY column;
+
+EXAMPLE CODE:
+-- How many customers in each city?
+SELECT city, COUNT(*) FROM loan_table GROUP BY city;
+
+OUTPUT:
+Mumbai 2
+Delhi  2
+Pune   1
+
+-- Average salary in each city
+SELECT city, AVG(salary) FROM loan_table GROUP BY city;
+
+OUTPUT:
+Mumbai (80000+90000)/2 = 85000
+Delhi  (60000+50000)/2 = 55000
+Pune   40000
+
+PROJECT USE:
+Data Scientist uses GROUP BY to analyze - Which city has more customers?
+
+INTERVIEW ANSWER:
+GROUP BY groups same values and applies aggregate on each group.
+
+================================================================
+TOPIC 10 - HAVING - Filter After GROUP BY
+================================================================
+CONCEPT:
+WHERE filters before grouping.
+HAVING filters after grouping.
+You cannot use WHERE with aggregate, you must use HAVING.
+
+COMMAND:
+SELECT column, COUNT(*) FROM table GROUP BY column HAVING COUNT(*) > number;
+
+EXAMPLE CODE:
+-- Only cities with more than 1 customer
+SELECT city, COUNT(*) FROM loan_table GROUP BY city HAVING COUNT(*) > 1;
+
+OUTPUT:
+Mumbai 2
+Delhi  2
+Pune will NOT come because count is 1, not > 1.
+
+-- Wrong way - This will give error:
+-- SELECT city, COUNT(*) FROM loan_table GROUP BY city WHERE COUNT(*) > 1; -- WRONG
+
+PROJECT USE:
+Show only cities with more than 50 customers for campaign.
+
+INTERVIEW ANSWER:
+WHERE filters before GROUP BY, HAVING filters after GROUP BY.
+
+================================================================
+TOPIC 11 - JOIN - Combine Two Tables - MOST IMPORTANT
+================================================================
+CONCEPT:
+JOIN combines two tables using common column.
+Types:
+INNER JOIN = Only matching in both tables.
+LEFT JOIN = All from left table + matching from right. If no match, NULL.
+RIGHT JOIN = All from right + matching from left.
+FULL JOIN = All from both.
+
+Create Second Table For Example:
+CREATE TABLE bank_table (city VARCHAR(50), branch VARCHAR(50));
+INSERT INTO bank_table VALUES ('Mumbai', 'Andheri Branch');
+INSERT INTO bank_table VALUES ('Delhi', 'Connaught Branch');
+INSERT INTO bank_table VALUES ('Chennai', 'T Nagar Branch');
+
+COMMAND:
+SELECT columns FROM table1 INNER JOIN table2 ON table1.column = table2.column;
+
+EXAMPLE CODE:
+-- INNER JOIN - Only cities present in both tables
+SELECT loan_table.name, bank_table.branch 
+FROM loan_table 
+INNER JOIN bank_table ON loan_table.city = bank_table.city;
+
+OUTPUT:
+Hyarel - Andheri Branch (Mumbai)
+Priya - Connaught Branch (Delhi)
+Sneha - Andheri Branch (Mumbai)
+Amit - Connaught Branch (Delhi)
+Rahul will NOT come because Pune has no branch in bank_table.
+
+-- LEFT JOIN - All loan customers, even if branch not found
+SELECT loan_table.name, bank_table.branch 
+FROM loan_table 
+LEFT JOIN bank_table ON loan_table.city = bank_table.city;
+
+OUTPUT:
+Hyarel - Andheri Branch
+Priya - Connaught Branch
+Rahul - NULL (Pune has no branch)
+Sneha - Andheri Branch
+Amit - Connaught Branch
+
+PROJECT USE:
+Combine customer table + branch table to show customer + branch in dashboard.
+
+INTERVIEW ANSWER:
+JOIN combines two tables. INNER gives only matching, LEFT gives all left + matching right.
+
+================================================================
+TOPIC 12 - Subquery - Query Inside Query
+================================================================
+CONCEPT:
+Subquery = One query inside another query. Inner query runs first, outer query uses its result.
+
+COMMAND:
+SELECT * FROM table WHERE column > (SELECT AVG(column) FROM table);
+
+EXAMPLE CODE:
+-- Customers with CIBIL more than average CIBIL (660)
+SELECT * FROM loan_table WHERE cibil > (SELECT AVG(cibil) FROM loan_table);
+
+Inner query: SELECT AVG(cibil) = 660
+Outer query: SELECT * WHERE cibil > 660
+
+OUTPUT:
+Hyarel 750
+Priya  680
+Sneha  720
+
+-- Customers in cities where branch exists
+SELECT * FROM loan_table WHERE city IN (SELECT city FROM bank_table);
+
+PROJECT USE:
+Get customers above average, without calculating average manually.
+
+INTERVIEW ANSWER:
+Subquery is query inside query, inner runs first.
+
+================================================================
+TOPIC 13 - UNION - Combine Results
+================================================================
+CONCEPT:
+UNION combines results of two SELECT queries.
+UNION removes duplicate.
+UNION ALL keeps duplicate.
+Both SELECTs must have same number of columns.
+
+COMMAND:
+SELECT column FROM table WHERE condition
+UNION
+SELECT column FROM table WHERE condition;
+
+EXAMPLE CODE:
+SELECT name FROM loan_table WHERE city = 'Mumbai'
+UNION
+SELECT name FROM loan_table WHERE city = 'Delhi';
+
+OUTPUT:
+Hyarel
+Sneha
+Priya
+Amit
+No duplicate, 4 names.
+
+-- UNION ALL - Keeps duplicate if any
+SELECT city FROM loan_table
+UNION ALL
+SELECT city FROM bank_table;
+
+PROJECT USE:
+Combine Mumbai + Delhi customers for campaign.
+
+INTERVIEW ANSWER:
+UNION combines two SELECT results, removes duplicate. UNION ALL keeps duplicate.
+
+================================================================
+TOPIC 14 - INSERT - Add New Data
+================================================================
+CONCEPT:
+INSERT adds new row to table.
+
+COMMAND:
+INSERT INTO table (column1, column2) VALUES (value1, value2);
+
+EXAMPLE CODE:
+INSERT INTO loan_table VALUES (6, 'Karan', 710, 75000, 'Pune');
+
+-- With column names - Better way
+INSERT INTO loan_table (id, name, cibil, salary, city) VALUES (6, 'Karan', 710, 75000, 'Pune');
+
+-- Check
+SELECT * FROM loan_table WHERE name = 'Karan';
+
+OUTPUT:
+6 Karan 710 75000 Pune
+
+PROJECT USE:
+When new user registers in FastAPI, backend does INSERT to PostgreSQL.
+
+INTERVIEW ANSWER:
+INSERT adds new row.
+
+================================================================
+TOPIC 15 - UPDATE - Change Data
+================================================================
+CONCEPT:
+UPDATE changes existing data.
+ALWAYS use WHERE, otherwise all rows will change. This is biggest mistake in interview and real job.
+
+COMMAND:
+UPDATE table SET column = new_value WHERE condition;
+
+EXAMPLE CODE:
+-- Update CIBIL of Hyarel from 750 to 760
+UPDATE loan_table SET cibil = 760 WHERE name = 'Hyarel';
+
+-- Check
+SELECT * FROM loan_table WHERE name = 'Hyarel';
+
+OUTPUT:
+Hyarel 760
+
+-- DANGER - Without WHERE, all rows change - NEVER DO THIS:
+-- UPDATE loan_table SET cibil = 760; -- This will change all 5 customers to 760. Wrong.
+
+PROJECT USE:
+Update CIBIL when customer CIBIL increases.
+
+INTERVIEW ANSWER:
+UPDATE changes data, always use WHERE.
+
+================================================================
+TOPIC 16 - DELETE - Remove Data
+================================================================
+CONCEPT:
+DELETE removes row.
+ALWAYS use WHERE, otherwise all rows will be deleted.
+
+COMMAND:
+DELETE FROM table WHERE condition;
+
+EXAMPLE CODE:
+-- Delete Rahul
+DELETE FROM loan_table WHERE name = 'Rahul';
+
+-- Check
+SELECT * FROM loan_table;
+
+OUTPUT:
+4 rows left, Rahul gone.
+
+-- DANGER - Without WHERE, all data gone:
+-- DELETE FROM loan_table; -- Deletes all rows. Never do without WHERE.
+
+Difference DELETE vs DROP vs TRUNCATE:
+DELETE = Deletes rows, table stays, you can rollback.
+DROP = Deletes table fully, structure also gone.
+TRUNCATE = Deletes all rows fast, table stays, cannot rollback easily.
+
+PROJECT USE:
+Delete customer who closed account.
+
+INTERVIEW ANSWER:
+DELETE removes row, always use WHERE.
+
+================================================================
+TOPIC 17 - CREATE TABLE, ALTER TABLE, DROP TABLE
+================================================================
+CONCEPT:
+CREATE TABLE = Make new table.
+ALTER TABLE = Change table structure - Add column, drop column, change type.
+DROP TABLE = Delete table fully.
+
+COMMAND:
+CREATE TABLE table_name (column type, column type);
+ALTER TABLE table_name ADD COLUMN column type;
+ALTER TABLE table_name DROP COLUMN column;
+DROP TABLE table_name;
+
+EXAMPLE CODE:
+-- CREATE
+CREATE TABLE payment_table (
+    payment_id INT PRIMARY KEY,
+    loan_id INT,
+    amount INT
+);
+
+-- ALTER - Add new column city
+ALTER TABLE loan_table ADD COLUMN email VARCHAR(100);
+
+-- ALTER - Drop column
+ALTER TABLE loan_table DROP COLUMN email;
+
+-- DROP - Delete payment_table fully
+DROP TABLE payment_table;
+
+PROJECT USE:
+Create table for new project, add new column when requirement changes.
+
+INTERVIEW ANSWER:
+CREATE makes table, ALTER changes table, DROP deletes table.
+
+================================================================
+TOPIC 18 - Primary Key, Foreign Key
+================================================================
+CONCEPT:
+Primary Key = Unique ID for each row. No duplicate, no NULL. Like Aadhar number. One table has one Primary Key.
+Foreign Key = ID from other table. Links two tables. Creates relation.
+
+COMMAND:
+CREATE TABLE table (id INT PRIMARY KEY, ...);
+CREATE TABLE table2 (id INT PRIMARY KEY, table1_id INT, FOREIGN KEY (table1_id) REFERENCES table1(id));
+
+EXAMPLE CODE:
+CREATE TABLE loan_table2 (
+    id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+CREATE TABLE payment_table2 (
+    payment_id INT PRIMARY KEY,
+    loan_id INT,
+    amount INT,
+    FOREIGN KEY (loan_id) REFERENCES loan_table2(id)
+);
+
+-- Insert
+INSERT INTO loan_table2 VALUES (1, 'Hyarel');
+INSERT INTO payment_table2 VALUES (101, 1, 5000); -- loan_id 1 exists, OK
+-- INSERT INTO payment_table2 VALUES (102, 99, 5000); -- loan_id 99 does NOT exist, ERROR - Foreign Key protects.
+
+PROJECT USE:
+Loan table id links to Payment table. Ensures payment always belongs to real loan.
+
+INTERVIEW ANSWER:
+Primary Key is unique ID, Foreign Key links two tables.
+
+================================================================
+TOPIC 19 - Constraints - NOT NULL, UNIQUE, CHECK, DEFAULT
+================================================================
+CONCEPT:
+Constraints = Rules for data. Database will reject wrong data.
+NOT NULL = Must have value, cannot be empty.
+UNIQUE = No duplicate value.
+CHECK = Must follow condition.
+DEFAULT = If no value given, use default value.
+
+COMMAND:
+CREATE TABLE table (column type NOT NULL, column type UNIQUE, column type CHECK(condition), column type DEFAULT value);
+
+EXAMPLE CODE:
+CREATE TABLE loan_table3 (
+    id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    cibil INT CHECK (cibil > 300 AND cibil <= 900),
+    city VARCHAR(50) DEFAULT 'Mumbai'
+);
+
+-- Test:
+-- INSERT INTO loan_table3 VALUES (1, NULL, 'a@gmail.com', 750, 'Delhi'); -- ERROR, name NOT NULL
+-- INSERT INTO loan_table3 VALUES (1, 'Hyarel', 'a@gmail.com', 200, 'Delhi'); -- ERROR, cibil CHECK fails, must be > 300
+-- INSERT INTO loan_table3 (id, name, email, cibil) VALUES (1, 'Hyarel', 'a@gmail.com', 750); -- OK, city will be Mumbai by DEFAULT
+
+PROJECT USE:
+Ensure data is correct - CIBIL always between 300 and 900, email always unique.
+
+INTERVIEW ANSWER:
+Constraints are rules - NOT NULL must have value, UNIQUE no duplicate, CHECK must follow condition, DEFAULT gives default value.
+
+================================================================
+TOPIC 20 - Index, View, Transaction - Advanced For Senior
+================================================================
+CONCEPT - 3 Parts:
+
+PART A - INDEX - Makes Search Fast
+Index is like index in book. Without index, PostgreSQL checks 1 Lakh rows one by one. With index, it jumps directly.
+COMMAND:
+CREATE INDEX index_name ON table(column);
+
+EXAMPLE:
+CREATE INDEX idx_cibil ON loan_table(cibil);
+
+-- Now this query will be fast:
+SELECT * FROM loan_table WHERE cibil = 750;
+
+PROJECT USE: When table has 1 Lakh rows, index makes search fast for FastAPI.
+
+PART B - VIEW - Saved Query, Virtual Table
+View is saved SELECT query. You save query once, use again like table.
+
+COMMAND:
+CREATE VIEW view_name AS SELECT ...;
+
+EXAMPLE:
+CREATE VIEW high_cibil AS SELECT * FROM loan_table WHERE cibil > 700;
+
+-- Now use view like table:
+SELECT * FROM high_cibil;
+
+OUTPUT:
+Hyarel 750, Sneha 720
+
+PROJECT USE: Save high CIBIL customers as view, dashboard uses view directly.
+
+PART C - TRANSACTION - All Or Nothing
+Transaction = Group of queries. Either all succeed, or none succeed.
+BEGIN = Start, COMMIT = Save, ROLLBACK = Cancel.
+
+COMMAND:
+BEGIN;
+Query1;
+Query2;
+COMMIT; -- or ROLLBACK;
+
+EXAMPLE:
+-- Transfer money - Debit from Hyarel, Credit to Priya - Both must happen
+BEGIN;
+UPDATE loan_table SET salary = salary - 10000 WHERE name = 'Hyarel';
+UPDATE loan_table SET salary = salary + 10000 WHERE name = 'Priya';
+COMMIT;
+
+If second query fails, do ROLLBACK, first query also cancelled. Money safe.
+
+PROJECT USE: Money transfer, payment - Must be all or nothing.
+
+INTERVIEW ANSWER:
+Index makes search fast, View is saved query, Transaction is all or nothing.
+
+================================================================
+FINAL SUMMARY - SQL FOR YOUR ROLE
+================================================================
+Your Role: Senior DevOps + Backend
+Key Role: DevOps + Backend
+Supporting: Data Science, AI, ML, DL, RAG, LangChain, LangGraph, FastAPI, ChromaDB, PostgreSQL
+
+SQL is language, PostgreSQL is database.
+You use SQL to get clean data from PostgreSQL to Pandas to FastAPI to RAG.
+
+Practice Plan:
+Day 1: Topics 1-7 - SELECT to LIKE
+Day 2: Topics 8-13 - Aggregate to UNION
+Day 3: Topics 14-20 - INSERT to Transaction
+Day 4: Run all examples in Codespace / PostgreSQL / SQLite
+
+Interview Line:
+"My key role is DevOps + Backend. I use SQL to get data from PostgreSQL, clean in Pandas, build API in FastAPI, RAG with ChromaDB, deploy with Docker, Kubernetes, Helm, Argo CD."
+
+END OF FILE
