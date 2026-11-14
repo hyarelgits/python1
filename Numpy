@@ -1,0 +1,475 @@
+NUMPY - ALL 10 SUBTOPICS - FULL NOTES FOR STUDY
+For Hyarel - Pure English - Project Use + Advantage + Interview
+====================================================
+
+WHAT IS NUMPY?
+Numpy = Numerical Python. Fast Maths for Big Numbers.
+List is slow for 1 lakh numbers. Numpy is fast.
+Pandas is built on Numpy. Matplotlib uses Numpy. ML models use Numpy for vectors.
+ChromaDB vectors are Numpy arrays.
+
+----------------------------------------------------
+SUBTOPIC 1 - WHAT IS NUMPY?
+----------------------------------------------------
+Explain:
+Numpy is a library for fast maths. It uses C language inside, so it is 10x faster than List.
+
+Where to use in Our Python Project?
+In our project, we have loan data - 1 lakh users balances, CIBIL scores.
+If you use List, it is slow. If you use Numpy, it is fast.
+
+Old vs New - Advantage:
+Old - List - balances = [1000, 500, 2000] - Loop needed, slow for 1 lakh.
+New - Numpy - balances = np.array([1000, 500, 2000]) - No loop, fast for 1 lakh, 10x faster.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy as np - np is short name
+arr = np.array([1000, 500, 2000])  # Make Numpy Array from List
+print(arr)  # Show array
+print(type(arr))  # Check type - numpy.ndarray
+
+Input:
+List = [1000, 500, 2000]
+
+Output:
+[1000  500 2000]
+<class 'numpy.ndarray'>
+
+Interview Question:
+Q: What is Numpy? Why use Numpy instead of List?
+A: Numpy is Numerical Python for fast maths. List is slow and cannot do maths directly.
+Numpy can do maths on full array in 1 line, and it is 10x faster for big data, because it uses C language inside.
+
+Project Code:
+import numpy as np
+balances = np.array([1000, 500, 2000, 3000, 4000])  # 1 lakh balances like this
+print(balances + 100)  # Add interest to all in 1 line
+Output: [1100  600 2100 3100 4100]
+
+----------------------------------------------------
+SUBTOPIC 2 - ARRAY CREATION - HOW TO MAKE ARRAY
+----------------------------------------------------
+Explain:
+You can make array from List, from Zero, from One, from Range.
+
+Where to use in Project?
+When you get data from PostgreSQL or CSV, you convert to Numpy array to do maths.
+When you need empty array to fill later.
+
+Old vs New - Advantage:
+Old - Make empty list, append one by one in loop - 5 lines.
+New - np.zeros(1000) - Make 1000 zeros in 1 line. np.arange(1, 100001) - Make 1 to 1 lakh in 1 line.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy
+a1 = np.array([1, 2, 3])  # From List - Make array from list
+print(a1)  # Show a1
+a2 = np.zeros(3)  # 3 Zeros - Make array of 3 zeros
+print(a2)  # Show a2
+a3 = np.ones(3)  # 3 Ones - Make array of 3 ones
+print(a3)  # Show a3
+a4 = np.arange(1, 5)  # Range 1 to 4 - Make array 1,2,3,4
+print(a4)  # Show a4
+
+Input:
+No input, direct creation
+
+Output:
+[1 2 3]
+[0. 0. 0.]
+[1. 1. 1.]
+[1 2 3 4]
+
+Interview Question:
+Q: How to create Numpy array?
+A: We can use np.array([1,2,3]) from list, np.zeros(5) for zeros, np.ones(5) for ones, np.arange(1,10) for range.
+In project, I use np.zeros to create empty balance array, then fill it.
+
+Project Code:
+import numpy as np
+users_balance = np.zeros(5)  # 5 users, 0 balance initially
+print(users_balance)  # Show - [0. 0. 0. 0. 0.]
+user_ids = np.arange(1, 6)  # User IDs 1 to 5
+print(user_ids)  # Show - [1 2 3 4 5]
+
+----------------------------------------------------
+SUBTOPIC 3 - ARRAY vs LIST - MAIN DIFFERENCE
+----------------------------------------------------
+Explain:
+List can store any type, mixed type, and cannot do maths directly.
+Numpy array stores same type only, and can do maths on full array in 1 line, no loop, faster, uses less memory.
+
+Where to use in Project?
+Loan interest calculation. You have 1 lakh balances, you want to add 100 interest to all.
+
+Old vs New - Advantage:
+Old - List - Need loop, 4 lines, slow.
+New - Numpy - 1 line, fast.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy
+# Old - List - Loop
+balances_list = [1000, 500, 2000]  # List
+new_list = []  # Empty list for new balances
+for b in balances_list:  # Loop - For each balance
+    new_list.append(b + 100)  # Add 100, append
+print(new_list)  # Show new_list
+# New - Numpy - No loop
+balances_np = np.array([1000, 500, 2000])  # Numpy Array
+print(balances_np + 100)  # Add 100 to all at once, no loop
+
+Input:
+Array = [1000, 500, 2000], Add = 100
+
+Output Both:
+[1100, 600, 2100]  # List output - With comma
+[1100  600 2100]  # Numpy output - Without comma
+
+Interview Question:
+Q: Difference between List and Numpy Array?
+A: List can store any type, mixed type, and cannot do maths directly. Numpy array stores same type only, and can do maths on full array in 1 line, no loop, faster, uses less memory.
+
+----------------------------------------------------
+SUBTOPIC 4 - INDEXING AND SLICING - TAKE ONE VALUE
+----------------------------------------------------
+Explain:
+Indexing = Take one value by position. Index starts from 0.
+Slicing = Take many values. arr[1:4] means from index 1 to 3.
+
+Where to use in Project?
+You want first 10 users, or last user, or users 100 to 200 for testing.
+
+Old vs New - Advantage:
+Old - List slicing also works, but Numpy slicing is faster and works for 2D also.
+New - Numpy - arr[0:100] - First 100 users in 1 line.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy
+arr = np.array([1000, 500, 2000, 3000, 4000])  # Array of 5 balances
+print(arr[0])  # First - Index 0 - 1000
+print(arr[2])  # Third - Index 2 - 2000
+print(arr[1:4])  # Slicing - From 1 to 3 - 500, 2000, 3000
+print(arr[-1])  # Last - -1 - 4000
+
+Input:
+Array = [1000, 500, 2000, 3000, 4000]
+
+Output:
+1000
+2000
+[ 500 2000 3000]
+4000
+
+Interview Question:
+Q: How to get first 100 rows from Numpy array?
+A: We use slicing - arr[0:100] - It gives first 100 values. In project, I use slicing to take sample data for testing, before running on full 1 lakh data.
+
+Project Code:
+import numpy as np
+all_cibil = np.array([750, 600, 800, 550, 700, 650])  # CIBIL of 6 users
+print(all_cibil[0])  # First user CIBIL - For testing - 750
+print(all_cibil[0:3])  # First 3 users - For sample - [750 600 800]
+print(all_cibil[-1])  # Last user - 650
+
+----------------------------------------------------
+SUBTOPIC 5 - MATHS OPERATIONS - ADD, SUB, MUL, DIV
+----------------------------------------------------
+Explain:
+Numpy does maths on full array in 1 line, no loop. Element by element.
+
+Where to use in Project?
+Calculate new balance after interest, calculate total balance, calculate EMI.
+
+Old vs New - Advantage:
+Old - Loop for each user, slow.
+New - 1 line for all users.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy
+a = np.array([1000, 500, 2000])  # Array A - Balances
+b = np.array([100, 100, 100])  # Array B - Interest
+print(a + b)  # Add - Element by element - [1100 600 2100]
+print(a - b)  # Sub - [900 400 1900]
+print(a * b)  # Mul - [100000 50000 200000]
+print(a / b)  # Div - [10. 5. 20.]
+
+Input:
+A = [1000, 500, 2000], B = [100, 100, 100]
+
+Output:
+[1100  600 2100]
+[ 900  400 1900]
+[100000  50000 200000]
+[10.  5. 20.]
+
+Interview Question:
+Q: How to add two Numpy arrays?
+A: Simply a + b - Numpy adds element by element. In project, I add balance array + interest array to get new balance for all users in 1 line, no loop.
+
+Project Code:
+import numpy as np
+balances = np.array([1000, 500, 2000])  # Balances
+interest = np.array([100, 50, 200])  # Interest
+print(balances + interest)  # New balance - [1100 550 2200]
+print(balances * 1.1)  # 10% interest - 1 line - [1100. 550. 2200.]
+
+----------------------------------------------------
+SUBTOPIC 6 - AGGREGATION - SUM, MEAN, MAX, MIN, STD
+----------------------------------------------------
+Explain:
+Aggregation = One answer from many numbers. Sum = Total, Mean = Average, Max = Biggest, Min = Smallest, Std = How much spread.
+
+Where to use in Project?
+Boss asks - Total balance? Average balance? Highest balance? Lowest balance? You give answer in 1 line.
+
+Old vs New - Advantage:
+Old - Loop + sum variable + count variable - 6 lines.
+New - arr.sum(), arr.mean(), arr.max() - 1 line each.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy
+arr = np.array([1000, 500, 2000])  # Array
+print(arr.sum())  # Total - 3500
+print(arr.mean())  # Average - 1166.66
+print(arr.max())  # Biggest - 2000
+print(arr.min())  # Smallest - 500
+print(arr.std())  # Standard Deviation - How much spread - 623.60
+
+Input:
+Array = [1000, 500, 2000]
+
+Output:
+3500
+1166.6666666666667
+2000
+500
+623.6095644623235
+
+Interview Question:
+Q: How to find average and total in Numpy?
+A: We use arr.mean() for average, arr.sum() for total, arr.max() for max, arr.min() for min. In project, I use this for daily report - Total balance, Average CIBIL.
+
+Project Code:
+import numpy as np
+balances = np.array([1000, 500, 2000, 3000])  # Balances
+print("Total:", balances.sum())  # For boss report - Total 6500
+print("Average:", balances.mean())  # For boss report - Average 1625.0
+print("Max:", balances.max())  # Highest balance user - 3000
+print("Min:", balances.min())  # Lowest balance user - 500
+
+----------------------------------------------------
+SUBTOPIC 7 - RESHAPE - CHANGE SHAPE
+----------------------------------------------------
+Explain:
+Reshape = Change 1D to 2D, like Excel rows and columns. Data same, shape changes.
+
+Where to use in Project?
+You have 6 values, you want to show as table - 2 rows, 3 columns - Like Excel. Or you have image data, you need to reshape for model.
+
+Old vs New - Advantage:
+Old - List cannot reshape easily, need nested loops.
+New - arr.reshape(2,3) - 1 line.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy
+arr = np.array([1000, 500, 2000, 3000, 4000, 6000])  # 1D - 6 values in 1 line
+print(arr)  # Show 1D
+arr_2d = arr.reshape(2, 3)  # 2 Rows, 3 Columns - Reshape
+print(arr_2d)  # Show 2D
+arr_3d = arr.reshape(3, 2)  # 3 Rows, 2 Columns - Reshape
+print(arr_3d)  # Show 2D other shape
+
+Input:
+Array = [1000, 500, 2000, 3000, 4000, 6000]
+
+Output:
+[1000  500 2000 3000 4000 6000]
+[[1000  500 2000]
+ [3000 4000 6000]]
+[[1000  500]
+ [2000 3000]
+ [4000 6000]]
+
+Interview Question:
+Q: What is reshape? Why use it?
+A: Reshape changes shape without changing data. arr.reshape(2,3) makes 1D to 2D. In project, I use reshape to convert flat data to table format, and in ML, to convert image data to model input shape.
+
+Project Code:
+import numpy as np
+data = np.array([1000, 500, 2000, 3000, 4000, 6000])  # Flat data
+table = data.reshape(2, 3)  # 2 User groups, 3 values each
+print(table)  # Show table
+
+----------------------------------------------------
+SUBTOPIC 8 - BROADCASTING - SMALL + BIG
+----------------------------------------------------
+Explain:
+Broadcasting = Small array + Big array, Numpy auto adjusts. Small value expands to match big array.
+
+Where to use in Project?
+Add same interest 100 to all users, or add different interest to different cities.
+
+Old vs New - Advantage:
+Old - Need loop to add same value to all.
+New - Broadcasting - Numpy auto adds same value to all in 1 line.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy
+arr = np.array([[1000, 500], [2000, 3000]])  # 2x2 - 2 cities, 2 users
+print(arr)  # Show original
+print(arr + 100)  # Add 100 to all - Small value 100 broadcasts to all
+print(arr + np.array([10, 20]))  # Add [10, 20] to each row - Broadcasting
+
+Input:
+Array = [[1000, 500], [2000, 3000]], Add = 100, Add Row = [10, 20]
+
+Output:
+[[1000  500]
+ [2000 3000]]
+[[1100  600]
+ [2100 3100]]
+[[1010  520]
+ [2010 3020]]
+
+Interview Question:
+Q: What is Broadcasting in Numpy?
+A: Broadcasting means Numpy automatically expands small array to match big array. Example - Array shape (2,2) + value 100 - Numpy adds 100 to all values. In project, I use this to add same interest to all users in 1 line.
+
+Project Code:
+import numpy as np
+balances = np.array([[1000, 500], [2000, 3000]])  # 2 cities, 2 users
+print(balances + 100)  # Add 100 interest to all - Broadcasting
+
+----------------------------------------------------
+SUBTOPIC 9 - RANDOM - RANDOM NUMBERS FOR DATA SCIENCE
+----------------------------------------------------
+Explain:
+Random = Make random data for testing, for model. Before real data comes, we make fake data.
+
+Where to use in Project?
+You need test data - 1000 fake users for testing, before real data comes. Or you need to split data - Train 80%, Test 20%.
+
+Old vs New - Advantage:
+Old - Write loop with random module, slow.
+New - np.random.randint() - 1 line, 1000 values.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy
+print(np.random.randint(1, 100, 5))  # 5 Random Integers 1 to 100
+print(np.random.rand(3))  # 3 Random Float 0 to 1
+print(np.random.choice([1000, 500, 2000], 3))  # Pick 3 random from list
+
+Input:
+No input, random generation
+
+Output - Example, your output will be different because random:
+[23 87 12 45 67]
+[0.34 0.78 0.12]
+[500 2000 1000]
+
+Interview Question:
+Q: How to generate random numbers in Numpy?
+A: We use np.random.randint(500,850,5) for 5 random integers, np.random.rand(3) for random float. In project, I use this to create fake test data for testing, before real data comes.
+
+Project Code:
+import numpy as np
+fake_cibil = np.random.randint(500, 850, 5)  # Make 5 fake CIBIL scores for testing
+print(fake_cibil)  # Show - Example [720 610 790 550 680]
+
+----------------------------------------------------
+SUBTOPIC 10 - REAL DATA SCIENCE USE - NUMPY + PANDAS
+----------------------------------------------------
+Explain:
+In Data Science, Numpy is used inside Pandas, Matplotlib, ML. Vectors in ChromaDB are Numpy arrays. Pandas + Numpy together is full DS.
+
+Where to use in Project?
+Full flow - Numpy + Pandas + Matplotlib together. Clean, analyse, graph, report to boss.
+
+Old vs New - Advantage:
+Old - Only List + Print - No graph, no analysis.
+New - Numpy + Pandas - Clean, analyse, graph, report to boss.
+
+Example Code with Comment:
+import numpy as np  # Import Numpy - Fast Maths
+import pandas as pd  # Import Pandas - Excel in Python
+balances = np.array([1000, 500, 2000, 3000])  # Numpy Array - Balances
+df = pd.DataFrame({"name": ["Hyarel", "Priya", "Rahul", "Amit"], "balance": balances})  # DataFrame - Table with Numpy array
+df["balance_with_interest"] = df["balance"] + 100  # Numpy maths in Pandas - Add 100 to all
+df["is_high"] = df["balance"] > 1000  # True / False - Balance > 1000?
+print(df)  # Show DataFrame
+print("Average Balance:", np.mean(df["balance"]))  # Average using Numpy
+
+Input:
+Balances = [1000, 500, 2000, 3000]
+
+Output:
+     name  balance  balance_with_interest  is_high
+0  Hyarel     1000                   1100    False
+1   Priya      500                    600    False
+2   Rahul     2000                   2100     True
+3    Amit     3000                   3100     True
+Average Balance: 1625.0
+
+Interview Question:
+Q: Where is Numpy used in real Data Science project?
+A: Numpy is used everywhere - Pandas is built on Numpy, Matplotlib uses Numpy, ML models use Numpy for vectors. In my project, I use Numpy for fast maths on 1 lakh balances, for aggregation for boss report, for creating test data, and for converting Pandas data to array for model.
+
+Project Code - Full:
+import numpy as np
+import pandas as pd
+balances = np.array([1000, 500, 2000, 3000])  # Numpy Array
+df = pd.DataFrame({"name": ["Hyarel", "Priya", "Rahul", "Amit"], "bal2": balances})  # DataFrame - Column name bal2
+df["bal3"] = df["bal2"] + 100  # New column bal3 = bal2 + 100 - Same name bal2 everywhere
+print(df)  # Show
+print("average", np.mean(df["bal2"]))  # Average - 1625.0
+
+----------------------------------------------------
+COMMON ERRORS IN NUMPY - IMPORTANT FOR UBUNTU
+----------------------------------------------------
+Error 1 - File name is numpy.py - WRONG
+If you name your file numpy.py, Python imports your own file, not real Numpy.
+Error: AttributeError: module 'numpy' has no attribute 'array'
+Fix: Rename file - mv numpy.py my_numpy_test.py
+And delete pycache - rm -rf __pycache__
+Never name file as numpy.py, pandas.py, matplotlib.py. Use my_numpy_test.py, bank.py.
+
+Error 2 - Pandas not installed
+Error: ModuleNotFoundError: No module named 'pandas'
+Fix: pip3 install pandas
+Check: python3 -c "import pandas; print(pandas.__version__)"
+
+Error 3 - KeyError: 'bal2'
+Error: KeyError: 'bal2' at df["bal3"] = df["bal2"] + 100
+Meaning: DataFrame has column named balances, but you ask for bal2. Name mismatch.
+Fix: Make name same everywhere. If DataFrame has bal2, use bal2. If DataFrame has balances, use balances.
+Rule: np = Always Numpy, pd = Always Pandas. Never write import numpy as pd.
+
+Error 4 - How to install Numpy in Ubuntu
+Commands:
+sudo apt update
+sudo apt install python3 python3-pip -y
+pip3 install numpy
+python3 -c "import numpy; print('Numpy Installed')"
+How to run command in Ubuntu: Press Ctrl + Alt + T to open Terminal, type command, press Enter.
+
+----------------------------------------------------
+FINAL CONFIDENCE LINE FOR INTERVIEW
+----------------------------------------------------
+If interviewer asks any Numpy question, say:
+"In my project, I have 1 lakh loan users. I use Numpy array instead of List, because Numpy is 10x faster, can do maths in 1 line without loop, and uses less memory. I use it for interest calculation, total, average, and for test data creation."
+
+----------------------------------------------------
+SUMMARY TABLE - 10 SUBTOPICS
+----------------------------------------------------
+1. What is Numpy - Fast Maths
+2. Array Creation - np.array, zeros, ones, arange
+3. Array vs List - List cannot do +100, Numpy can
+4. Indexing / Slicing - Take one, take many
+5. Maths Operations - Add, Sub, Mul, Div - No loop
+6. Aggregation - Sum, Mean, Max, Min, Std
+7. Reshape - 1D to 2D
+8. Broadcasting - Small + Big
+9. Random - Random numbers
+10. Real DS Use - Pandas + Numpy together
+
+END - NUMPY FULL NOTES DONE
