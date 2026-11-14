@@ -1,0 +1,271 @@
+# ============================================
+# PYTHON - ALL TOPICS - VARIABLE TO NUMPY
+# One File - Same Morning Example - Hyarel Bank
+# ============================================
+
+# ---------- 1. VARIABLE ----------
+# Variable = Dabba to store value
+name = "Hyarel"  # Variable - name box, Hyarel inside
+balance = 1000  # Variable - balance box, 1000 inside
+print(name)  # Show name
+print(balance)  # Show balance
+
+# ---------- 2. DATA TYPES ----------
+# Data Types = What type inside box
+age = 25  # int - Full number
+balance_f = 1000.5  # float - Point number
+is_approved = True  # bool - True / False
+print(type(name))  # Check type - str
+print(type(age))  # Check type - int
+
+# ---------- 3. LIST ----------
+# List = Many values in one box, can change
+balances = [1000, 500, 2000]  # List of balances
+print(balances)  # Show full list
+print(balances[0])  # First value - 1000
+balances.append(3000)  # Add new value
+print(balances)
+
+# ---------- 4. DICTIONARY ----------
+# Dictionary = Key : Value pair
+user = {"name": "Hyarel", "age": 25, "city": "Pune"}  # Dict
+print(user)  # Show full dict
+print(user["name"])  # Show only name
+user["balance"] = 1000  # Add new key balance
+print(user)
+
+# ---------- 5. TUPLE ----------
+# Tuple = Like List, but cannot change - Fixed
+timing = (11, 12, 1)  # Tuple - X=11, Y=12, Z=1 - Fixed time
+print(timing)
+print(timing[0])  # First - 11
+
+# ---------- 6. SET ----------
+# Set = No duplicate, no order
+cities = {"Pune", "Mumbai", "Pune"}  # Set - Pune one time only
+print(cities)
+
+# ---------- 7. OPERATORS ----------
+# Operators = Maths + Compare
+a = 10  # Variable a
+b = 3  # Variable b
+print(a + b)  # Add - 13
+print(a - b)  # Sub - 7
+print(a * b)  # Mul - 30
+print(a > b)  # Compare - True
+
+# ---------- 8. IF-ELSE ----------
+# If-Else = Decision - CIBIL check
+cibil = 750  # CIBIL score
+if cibil >= 700:  # If CIBIL good
+    print("Loan Approved")  # Then approve
+else:  # Else
+    print("Loan Rejected")  # Reject
+
+# ---------- 9. LOOPS ----------
+# Loops = Repeat work
+for i in [1000, 500, 2000]:  # For Loop - For each balance
+    print(i)  # Show each
+
+count = 1  # While Loop start
+while count <= 3:  # While count <=3
+    print(f"Chai {count}")  # Show Chai 1,2,3
+    count = count + 1  # Increase count
+
+# ---------- 10. OOPS - PARENT + CHILD ----------
+# OOPS = Real life in code - Class = Blueprint, Object = Real house
+class BankAccount:  # Parent Class - Father
+    def __init__(self, name, balance):  # __init__ - Save values when object made
+        self.name = name  # Save name in this object
+        self.balance = balance  # Save balance in this object
+    def show(self):  # Method - Parent work - Show balance
+        return f"{self.name} has {self.balance} rupees"
+
+class SavingsAccount(BankAccount):  # Child Class - Son - Father is BankAccount
+    def __init__(self, name, balance, interest):  # Child __init__ - 3 values
+        super().__init__(name, balance)  # Call Father __init__ - Save name, balance
+        self.interest = interest  # Save interest - Child own
+    def add_interest(self):  # Child Method 1 - Add interest
+        self.balance = self.balance + self.interest  # New balance
+        return f"{self.name} new balance is {self.balance}"
+    def show_interest(self):  # Child Method 2 - Show interest
+        return f"{self.name} interest is {self.interest}"
+
+a1 = BankAccount("Hyarel", 1000)  # Object - Parent Object
+print(a1.show())  # Recall Function - Parent method
+s1 = SavingsAccount("Priya", 1000, 100)  # Object - Child Object - 3 values
+print(s1.show())  # Recall - Child uses Father method free
+print(s1.add_interest())  # Recall - Child Method 1
+print(s1.show_interest())  # Recall - Child Method 2
+
+# ---------- 11. FILE HANDLING ----------
+# File Handling = Save in file, read later
+with open("account.txt", "w") as f:  # Open file in Write mode
+    f.write("Hyarel has 1000")  # Write in file
+with open("account.txt", "r") as f:  # Open file in Read mode
+    print(f.read())  # Read and show
+
+# ---------- 12. EXCEPTION HANDLING ----------
+# Exception Handling = Try / Except - If error, don't crash
+try:  # Try this
+    x = int("hello")  # Error - hello is not number
+    print(x)
+except Exception as e:  # If error comes
+    print("Error came - Please give number only")  # Friendly message
+    print(e)  # Show real error
+
+# ---------- 13. MODULES ----------
+# Modules = Ready toolbox - Import and use
+import math  # Import math module
+print(math.sqrt(16))  # Use sqrt - 4.0
+
+# ---------- 14. JSON ----------
+# JSON = Data format for API - Like Dict, for FastAPI
+import json  # Import json module
+user2 = {"name": "Hyarel", "balance": 1000}  # Dict
+json_text = json.dumps(user2)  # Dict -> JSON string
+print(json_text)  # Show JSON string
+back = json.loads(json_text)  # JSON string -> Dict
+print(back["name"])  # Show name from Dict
+
+# ---------- 15. LIST COMPREHENSION ----------
+# List Comprehension = Short loop to make list in 1 line
+new_list = [b + 100 for b in [1000, 500, 2000]]  # Add 100 to each, 1 line
+print(new_list)  # [1100, 600, 2100]
+
+# ---------- 16. DICTIONARY COMPREHENSION ----------
+# Dictionary Comprehension = Short loop to make dict in 1 line
+names = ["Hyarel", "Priya"]  # Names list
+balances_dict = {n: 1000 for n in names}  # Dict - Each name -> 1000
+print(balances_dict)
+
+# ---------- 17. ITERATOR ----------
+# Iterator = One by one giver - next() gives next item
+it_list = [1000, 500, 2000]  # List
+it = iter(it_list)  # Make Iterator
+print(next(it))  # First - 1000
+print(next(it))  # Second - 500
+print(next(it))  # Third - 2000
+
+# ---------- 18. GENERATOR ----------
+# Generator = Lazy giver - yield, not return - Gives one by one
+def give_chai(n):  # Generator function
+    for i in range(1, n+1):  # Loop 1 to n
+        yield f"Chai {i}"  # Yield - Give one, wait
+for chai in give_chai(3):  # Use generator
+    print(chai)  # Chai 1,2,3
+
+# ---------- 19. DATACLASS ----------
+# Dataclass = Shortcut Class - No need to write __init__, Python writes for you
+from dataclasses import dataclass  # Import dataclass
+
+@dataclass  # Tell Python - Make __init__ automatically
+class BankAccount2:  # Parent Class - Dataclass
+    name: str  # Variable - name is String
+    balance: float  # Variable - balance is Float
+    def show(self):  # Method - Same as before
+        return f"{self.name} has {self.balance} rupees"
+
+@dataclass  # Dataclass for Child also
+class SavingsAccount2(BankAccount2):  # Child Class - Father is BankAccount2
+    interest: float  # Child extra variable
+    def add_interest(self):  # Child Method 1
+        self.balance = self.balance + self.interest
+        return f"{self.name} new balance is {self.balance}"
+    def show_interest(self):  # Child Method 2
+        return f"{self.name} interest is {self.interest}"
+
+d1 = BankAccount2("Hyarel", 1000)  # Object - Parent Dataclass Object
+print(d1.show())  # Recall - Parent method
+d2 = SavingsAccount2("Priya", 1000, 100)  # Object - Child Dataclass Object
+print(d2.show())  # Recall - Father method free
+print(d2.add_interest())  # Recall - Child Method 1
+print(d2.show_interest())  # Recall - Child Method 2
+
+# ---------- 20. TYPING ----------
+# Typing = Like Comments, but better - Note + Check - For Human + VS Code + FastAPI
+name_typed: str = "Hyarel"  # Typing - name must be String
+balance_typed: float = 1000.0  # Typing - balance must be Float
+def add_interest_typed(amount: float) -> float:  # Typing - amount Float, return Float
+    return amount + 100  # Add 100
+print(add_interest_typed(1000.0))  # Call - 1100.0
+
+# ---------- 21. PATHLIB ----------
+# Pathlib = Advanced File Handling - Short, works on Windows + Linux
+from pathlib import Path  # Import Path
+file_path = Path("account.json")  # Path object - File address
+file_path.write_text("Hyarel has 1000")  # Write - 1 line, no open
+print(file_path.read_text())  # Read - 1 line
+print(file_path.exists())  # Check exists? - True
+print(file_path.is_file())  # Check is file? - True
+
+# ---------- 22. LOGGING ----------
+# Logging = Advanced Print - Shows + Saves in file + Shows time + Level
+import logging  # Import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", filename="app.log", filemode="w")  # Setup Logging - Save in app.log
+logging.info("File saved")  # INFO - Green - Everything OK
+logging.warning("Balance is low")  # WARNING - Yellow - Careful
+logging.error("File not found")  # ERROR - Red - Problem
+print("Done - Check app.log file")  # Show done
+
+# ---------- 23. PYDANTIC ----------
+# Pydantic = Automatic Checker / Guard - Checks data before code runs - FastAPI uses this
+from pydantic import BaseModel  # Import BaseModel
+
+class LoanForm(BaseModel):  # Pydantic Model - Blueprint with Guard
+    name: str  # Name must be String
+    age: int  # Age must be Int
+    balance: float  # Balance must be Float
+
+form1 = LoanForm(name="Hyarel", age=25, balance=1000.0)  # Correct data - OK
+print(form1)  # Show form1
+try:  # Try wrong data
+    form2 = LoanForm(name="Priya", age="twenty-five", balance=1000.0)  # Wrong - Age is text
+    print(form2)
+except Exception as e:  # If Pydantic says error
+    print("Pydantic Error - Age must be number")  # Friendly message
+    print(e)  # Show real error
+
+# ---------- 24. PANDAS ----------
+# Pandas = Excel in Python - For 1 lakh rows - Filter, Count in 1 line
+import pandas as pd  # Import pandas as pd
+df = pd.DataFrame([  # DataFrame - Excel Table
+    {"name": "Hyarel", "balance": 1000, "city": "Pune", "approved": "Yes"},
+    {"name": "Priya", "balance": 500, "city": "Mumbai", "approved": "No"},
+    {"name": "Rahul", "balance": 2000, "city": "Pune", "approved": "Yes"},
+])
+print(df)  # Show full table
+print(df[df["approved"] == "Yes"])  # Filter - Only Approved Yes
+print(len(df[df["approved"] == "Yes"]))  # Count Approved - 2
+print(df["balance"].sum())  # Total balance - 3500
+print(df["balance"].mean())  # Average balance - 1166.66
+print(df[df["city"] == "Pune"])  # Filter - Only Pune
+
+# ---------- 25. PYTEST ----------
+# Pytest = Automatic Tester - Test file must start with test_ - assert = Check
+# This part is for test file - test_bank.py - Run with: pytest test_bank.py -v
+# def test_hyarel_balance():  # Test function - Must start with test_
+#     a1 = BankAccount("Hyarel", 1000)  # Make object
+#     assert a1.show() == "Hyarel has 1000 rupees"  # assert - Check if equal, Pass / Fail
+# Output of Pytest: 1 passed
+
+# ---------- 26. MATPLOTLIB ----------
+# Matplotlib = Graph maker - Pie, Bar, Line - Like Grafana, but in Python
+import matplotlib.pyplot as plt  # Import pyplot
+labels = ["Approved", "Not Approved"]  # Labels for Pie
+values = [2, 1]  # Values for Pie - 2 Approved, 1 Not Approved
+plt.pie(values, labels=labels)  # Make Pie Chart
+plt.title("Loan Approved - Pie Chart")  # Title
+plt.show()  # Show Pie Chart - Approved 67%, Not Approved 33%
+
+# ---------- 27. NUMPY ----------
+# Numpy = Fast Maths for Big Numbers - No loop, all at once
+import numpy as np  # Import numpy as np
+balances_np = np.array([1000, 500, 2000])  # Numpy Array - Like List but fast
+new_balances_np = balances_np + 100  # Add 100 to all at once - No loop - List cannot do this
+print(new_balances_np)  # [1100 600 2100]
+print(balances_np.mean())  # Average - 1166.66
+print(balances_np.sum())  # Total - 3500
+print(balances_np.max())  # Max - 2000
+
+print("All Topics Done - Variable to Numpy - Nampai!")
