@@ -1,0 +1,1030 @@
+PYTHON: A DETAILED BEGINNER-TO-ADVANCED GUIDE
+=============================================
+
+About this guide
+----------------
+This guide explains important Python topics step by step. It includes
+commands, code examples, and explanations of what the code does. You can
+copy the examples into a file ending in .py and run them with Python.
+
+Python is a programming language. You write instructions in Python, and
+the Python interpreter reads and runs those instructions. Python is used
+for automation, websites, data analysis, scientific computing, and many
+other kinds of software.
+
+
+1. INSTALLING PYTHON AND RUNNING A PROGRAM
+==========================================
+
+Check whether Python is installed by opening a terminal or command prompt
+and running one of these commands:
+
+    python --version
+
+If that does not work, try:
+
+    python3 --version
+
+A Python program is commonly saved in a file whose name ends with .py.
+For example, create a file named hello.py containing:
+
+    print("Hello, world!")
+
+Run it from the terminal:
+
+    python hello.py
+
+On some computers, use:
+
+    python3 hello.py
+
+The print() function displays information on the screen. Text must be
+surrounded by quotation marks.
+
+You can also start Python interactively from a terminal:
+
+    python
+
+You will see a prompt, often shown as >>>. You can type Python code
+directly there:
+
+    >>> print("Hello!")
+    Hello!
+
+To leave the interactive interpreter, type exit() or press Ctrl+D
+(macOS/Linux) or Ctrl+Z followed by Enter (Windows).
+
+
+2. VARIABLES
+============
+
+What is a variable?
+-------------------
+A variable is a name that refers to a value. It lets your program save
+information and use that information later.
+
+For example:
+
+    name = "Maya"
+
+This is an assignment statement. Python evaluates the value on the right
+side of the equals sign and assigns it to the name on the left side.
+
+    name        =        "Maya"
+    variable name         value
+
+To display the value, use the variable's name:
+
+    name = "Maya"
+    print(name)
+
+Output:
+
+    Maya
+
+The equals sign (=) means “assign this value to this name.” It does not
+mean “is equal to” as it does in a math equation. To compare two values,
+use two equals signs (==).
+
+How variables work
+------------------
+When Python runs this statement:
+
+    age = 20
+
+it creates or updates the name age so that it refers to the integer
+value 20. When Python later encounters:
+
+    print(age)
+
+it looks up the current value associated with age and displays it.
+
+A variable can be assigned a new value:
+
+    age = 20
+    age = 21
+    print(age)
+
+The output is 21 because the second assignment updates the name age.
+
+Python variables do not need a type declaration. Python determines the
+type from the value:
+
+    age = 20            # integer
+    name = "Maya"       # text
+    height = 1.68       # decimal number
+    is_ready = True     # Boolean value
+
+Five detailed variable examples
+-------------------------------
+
+Example 1: Store and display a name
+
+    student_name = "Maya"
+    print(student_name)
+
+What happens:
+1. Python assigns the text "Maya" to student_name.
+2. print(student_name) looks up the value assigned to student_name.
+3. Python displays Maya.
+
+Example 2: Use variables in a calculation
+
+    price = 12
+    quantity = 3
+    total_cost = price * quantity
+
+    print(total_cost)
+
+What happens:
+1. price refers to 12.
+2. quantity refers to 3.
+3. Python multiplies the values: 12 * 3.
+4. The result, 36, is assigned to total_cost.
+5. print displays 36.
+
+Example 3: Update a variable using its current value
+
+    score = 10
+    score = score + 5
+
+    print(score)
+
+What happens:
+1. score is assigned 10.
+2. Python reads the current value of score, which is 10.
+3. It calculates 10 + 5.
+4. It assigns 15 back to score.
+5. The program displays 15.
+
+A shorter form of score = score + 5 is:
+
+    score += 5
+
+Other update operators include -=, *=, and /=.
+
+Example 4: Put a variable into a sentence
+
+    city = "Toronto"
+    message = f"I live in {city}."
+    print(message)
+
+What happens:
+1. city refers to the text "Toronto".
+2. The f before the quotation mark makes the text an f-string.
+3. Python replaces {city} with the value stored in city.
+4. message becomes "I live in Toronto."
+5. print displays the message.
+
+Example 5: Use a variable in a decision
+
+    is_ready = True
+
+    if is_ready:
+        print("The program is ready to start.")
+    else:
+        print("The program is not ready yet.")
+
+What happens:
+1. is_ready refers to the Boolean value True.
+2. The if statement checks the value of is_ready.
+3. Because the value is True, Python runs the indented print statement
+   under if.
+4. The else block is skipped.
+
+Variable naming rules
+---------------------
+- A name may contain letters, numbers, and underscores.
+- A name cannot start with a number.
+- Names are case-sensitive. age, Age, and AGE are different names.
+- Do not use Python keywords such as if, for, or class as variable names.
+- Use names that explain what the values represent.
+
+Good names:
+
+    first_name = "Maya"
+    total_price = 25.50
+    is_logged_in = False
+
+Unclear names:
+
+    x = "Maya"
+    tp = 25.50
+
+Python convention usually uses lowercase words separated by underscores:
+first_name, total_price, is_logged_in.
+
+More than one assignment
+------------------------
+You can assign values to more than one variable in one statement:
+
+    width, height = 10, 5
+
+This assigns 10 to width and 5 to height.
+
+You can also assign the same value to multiple names:
+
+    first_score = second_score = 0
+
+
+3. DATA TYPES
+=============
+
+A data type describes the kind of value a variable refers to. The type
+affects what operations make sense for that value.
+
+String (str): text
+
+    greeting = "Hello"
+    city = 'Toronto'
+
+Strings can use single or double quotation marks. To join strings, use +:
+
+    first_name = "Maya"
+    last_name = "Chen"
+    full_name = first_name + " " + last_name
+    print(full_name)
+
+An f-string is often easier for inserting values into text:
+
+    age = 20
+    print(f"I am {age} years old.")
+
+Integer (int): whole numbers
+
+    count = 7
+    temperature = -3
+
+Float (float): numbers with a decimal point
+
+    price = 19.99
+    average = 4.5
+
+Boolean (bool): True or False
+
+    has_ticket = True
+    is_closed = False
+
+Boolean values are often used in conditions. The words True and False
+must begin with capital letters.
+
+None: no value
+
+    result = None
+
+None is often used to represent a value that has not been supplied or
+does not exist.
+
+Check the type of a value using type():
+
+    value = 3.14
+    print(type(value))
+
+Convert between types when needed:
+
+    age_text = "20"
+    age_number = int(age_text)
+
+    price_text = "4.50"
+    price_number = float(price_text)
+
+    number = 25
+    number_text = str(number)
+
+Conversion can fail if the text is not suitable. For example,
+int("hello") causes a ValueError.
+
+
+4. OPERATORS
+============
+
+Arithmetic operators
+--------------------
+Python provides operators for calculations:
+
+    print(8 + 2)    # addition: 10
+    print(8 - 2)    # subtraction: 6
+    print(8 * 2)    # multiplication: 16
+    print(8 / 2)    # division: 4.0
+    print(8 // 3)   # floor division: 2
+    print(8 % 3)    # remainder: 2
+    print(8 ** 2)   # exponent: 64
+
+The % operator gives the remainder. For example, 8 divided by 3 leaves
+a remainder of 2.
+
+Comparison operators
+--------------------
+Comparisons produce True or False:
+
+    print(5 == 5)   # equal to: True
+    print(5 != 3)   # not equal to: True
+    print(5 > 3)    # greater than: True
+    print(5 < 3)    # less than: False
+    print(5 >= 5)   # greater than or equal to: True
+    print(4 <= 3)   # less than or equal to: False
+
+Remember:
+    =     assigns a value
+    ==    compares two values
+
+Logical operators
+-----------------
+Logical operators combine or reverse conditions:
+
+    age = 20
+    has_permission = True
+
+    print(age >= 18 and has_permission)
+    print(age < 18 or has_permission)
+    print(not has_permission)
+
+- and is True only when both sides are True.
+- or is True when at least one side is True.
+- not reverses True to False, or False to True.
+
+
+5. INPUT AND OUTPUT
+===================
+
+Use print() to display information:
+
+    print("Welcome")
+    print(2 + 3)
+
+Use input() to ask the user to type something:
+
+    name = input("What is your name? ")
+    print(f"Hello, {name}!")
+
+input() returns text, even when the user types digits. Convert the input
+if you need to do arithmetic:
+
+    age_text = input("How old are you? ")
+    age = int(age_text)
+    print(f"Next year you will be {age + 1}.")
+
+For a decimal number, use float():
+
+    price = float(input("Enter a price: "))
+    print(f"Price with tax estimate: {price * 1.1:.2f}")
+
+The :.2f portion formats the number to two digits after the decimal point.
+
+
+6. CONDITIONS
+=============
+
+Conditions allow a program to choose which instructions to run.
+
+    temperature = 22
+
+    if temperature > 30:
+        print("It is hot.")
+    elif temperature > 15:
+        print("The weather is mild.")
+    else:
+        print("It is cold.")
+
+Python checks the conditions from top to bottom:
+1. If temperature is greater than 30, the first block runs.
+2. Otherwise, if it is greater than 15, the elif block runs.
+3. Otherwise, the else block runs.
+
+The colon (:) starts a block. The indented lines belong to that block.
+Python convention uses four spaces for indentation.
+
+Conditions can be combined:
+
+    age = 22
+    has_ticket = True
+
+    if age >= 18 and has_ticket:
+        print("Entry allowed.")
+    else:
+        print("Entry not allowed.")
+
+Python also has match statements for selecting among patterns. They are
+useful when there are several specific cases:
+
+    command = "start"
+
+    match command:
+        case "start":
+            print("Starting.")
+        case "stop":
+            print("Stopping.")
+        case _:
+            print("Unknown command.")
+
+
+7. LOOPS
+========
+
+A loop repeats a block of code.
+
+For loops
+---------
+A for loop goes through each item in a sequence:
+
+    fruits = ["apple", "banana", "pear"]
+
+    for fruit in fruits:
+        print(fruit)
+
+The loop assigns each item in turn to fruit, then runs the indented
+block. The output is one fruit per line.
+
+range() generates a sequence of numbers:
+
+    for number in range(1, 4):
+        print(number)
+
+This displays 1, 2, and 3. The ending number is not included.
+
+While loops
+-----------
+A while loop repeats as long as its condition is True:
+
+    count = 1
+
+    while count <= 3:
+        print(count)
+        count += 1
+
+The loop displays 1, 2, and 3. Each time through the loop, count
+increases. When count becomes 4, the condition is False and the loop
+stops.
+
+If the condition never becomes False, the loop can run forever. Make
+sure a while loop has a way to finish.
+
+Loop control
+-----------
+break exits a loop early:
+
+    for number in range(10):
+        if number == 4:
+            break
+        print(number)
+
+continue skips the rest of the current iteration and moves to the next:
+
+    for number in range(5):
+        if number == 2:
+            continue
+        print(number)
+
+
+8. COLLECTIONS: LISTS, TUPLES, DICTIONARIES, AND SETS
+=====================================================
+
+Lists
+-----
+A list stores an ordered collection of values. Lists can be changed.
+
+    colors = ["red", "green", "blue"]
+
+List positions are called indexes. Indexes start at 0:
+
+    print(colors[0])   # red
+    print(colors[1])   # green
+
+Change an item:
+
+    colors[1] = "yellow"
+
+Add an item:
+
+    colors.append("purple")
+
+Remove an item:
+
+    colors.remove("red")
+
+Find how many items are in a list:
+
+    print(len(colors))
+
+A slice selects part of a list:
+
+    numbers = [10, 20, 30, 40, 50]
+    print(numbers[1:4])    # [20, 30, 40]
+
+Tuples
+------
+A tuple is an ordered collection that is typically used when its contents
+should not be changed:
+
+    point = (4, 7)
+    print(point[0])
+
+Tuples are useful for grouping related values, such as a coordinate or a
+color represented by red, green, and blue components.
+
+Dictionaries
+------------
+A dictionary stores values under keys. Each key identifies a value:
+
+    person = {
+        "name": "Maya",
+        "age": 20,
+        "city": "Toronto"
+    }
+
+    print(person["name"])
+
+Change a value:
+
+    person["age"] = 21
+
+Add a new key and value:
+
+    person["occupation"] = "student"
+
+Use get() when a key may not exist:
+
+    print(person.get("phone", "No phone number supplied"))
+
+Sets
+----
+A set stores unique values. It is useful when duplicates should be
+removed or when checking membership:
+
+    numbers = {1, 2, 2, 3}
+    print(numbers)       # contains 1, 2, and 3
+
+    numbers.add(4)
+    print(3 in numbers)  # True
+
+Sets are not used like lists when you need to rely on item positions.
+
+
+9. FUNCTIONS
+============
+
+A function is a named, reusable block of code. Functions help organize a
+program and avoid repeating the same instructions.
+
+Define and call a function:
+
+    def greet():
+        print("Hello!")
+
+    greet()
+
+The def statement defines the function. The final line calls it.
+
+Parameters and arguments
+------------------------
+A parameter is a name in a function definition. An argument is a value
+supplied when the function is called:
+
+    def greet(name):
+        print(f"Hello, {name}!")
+
+    greet("Maya")
+
+Here, name is a parameter and "Maya" is the argument. When called, the
+function uses the argument value for its parameter.
+
+Return values
+-------------
+A function can calculate and return a value:
+
+    def add(first_number, second_number):
+        return first_number + second_number
+
+    result = add(4, 6)
+    print(result)
+
+return sends the result back to the place where the function was called.
+After return runs, that function call is finished.
+
+Default values
+--------------
+A parameter can have a default value:
+
+    def greet(name="there"):
+        print(f"Hello, {name}!")
+
+    greet()
+    greet("Maya")
+
+The first call uses the default. The second call supplies a different
+value.
+
+Variable scope
+--------------
+A variable created inside a function is normally local to that function:
+
+    def show_message():
+        message = "Hello"
+        print(message)
+
+    show_message()
+
+The variable message is local to show_message. Code outside the function
+should not expect to use it.
+
+
+10. MODULES, PACKAGES, AND VIRTUAL ENVIRONMENTS
+===============================================
+
+A module is a Python file containing code that can be imported and reused.
+Python includes many built-in modules:
+
+    import random
+
+    number = random.randint(1, 10)
+    print(number)
+
+This imports the random module and asks it for a random integer from 1
+through 10.
+
+You can import a particular item:
+
+    from math import sqrt
+
+    print(sqrt(25))
+
+A package is a way of organizing related Python modules into a
+directory. Packages help keep larger projects organized.
+
+A virtual environment keeps a project's installed packages separate from
+other Python projects. Create one in the project directory:
+
+    python -m venv .venv
+
+Activate it using the command appropriate for your operating system.
+
+Windows Command Prompt:
+
+    .venv\Scripts\activate
+
+macOS or Linux:
+
+    source .venv/bin/activate
+
+Install a third-party package using pip:
+
+    python -m pip install package_name
+
+Replace package_name with the package you intend to install. Use
+python -m pip rather than just pip when you want to make sure pip is
+associated with the Python interpreter you are using.
+
+
+11. FILE HANDLING
+=================
+
+Programs can read and write files. The with statement is recommended
+because it closes the file automatically, even if a problem occurs.
+
+Write text to a file:
+
+    with open("notes.txt", "w", encoding="utf-8") as file:
+        file.write("I am learning Python.\n")
+        file.write("Files can store text.\n")
+
+Read the file:
+
+    with open("notes.txt", "r", encoding="utf-8") as file:
+        contents = file.read()
+
+    print(contents)
+
+Common file modes:
+- "r" reads a file.
+- "w" writes a file, replacing its existing contents.
+- "a" appends to the end of a file.
+
+The encoding="utf-8" setting is a good choice for ordinary text files.
+A file must usually exist before opening it in read mode. Write mode
+creates a file if it does not exist.
+
+
+12. ERRORS AND EXCEPTION HANDLING
+=================================
+
+An error can prevent a program from completing. Python displays an error
+message and a traceback that usually includes the file and line where
+the error occurred.
+
+Common error types include:
+- SyntaxError: Python cannot understand the code's structure.
+- NameError: a name is used before it has been defined.
+- TypeError: an operation is not suitable for the supplied type.
+- ValueError: a value has an acceptable type but an unusable value.
+- IndexError: a list index does not exist.
+- KeyError: a dictionary key does not exist.
+
+Use try and except to handle errors you expect may happen:
+
+    try:
+        number = int(input("Enter a whole number: "))
+        answer = 10 / number
+        print(answer)
+    except ValueError:
+        print("Please enter a valid whole number.")
+    except ZeroDivisionError:
+        print("The number cannot be zero.")
+
+The code inside try runs normally unless an exception occurs. Python
+then looks for a matching except block. Catch specific exceptions so
+that your program handles the problem appropriately.
+
+You can use else for code that runs when no exception happened, and
+finally for cleanup code that should run either way:
+
+    try:
+        number = int(input("Enter a number: "))
+    except ValueError:
+        print("That was not a whole number.")
+    else:
+        print(f"You entered {number}.")
+    finally:
+        print("Finished.")
+
+
+13. CLASSES AND OBJECT-ORIENTED PROGRAMMING
+===========================================
+
+A class describes a kind of object. An object is a particular instance
+created from that class.
+
+    class Dog:
+        def __init__(self, name):
+            self.name = name
+
+        def bark(self):
+            print(f"{self.name} says woof!")
+
+    my_dog = Dog("Rex")
+    my_dog.bark()
+
+Explanation:
+- class Dog: defines a class named Dog.
+- __init__: a special method called when a new Dog is created.
+- self: refers to the particular object being used.
+- self.name = name: stores a name on that object.
+- Dog("Rex"): creates a Dog object whose name is Rex.
+- my_dog.bark(): calls the bark method on that object.
+
+An object can store data in attributes, such as my_dog.name, and provide
+behavior through methods, such as my_dog.bark().
+
+Inheritance lets one class build on another:
+
+    class ServiceDog(Dog):
+        def assist(self):
+            print(f"{self.name} is assisting.")
+
+    helper = ServiceDog("Buddy")
+    helper.bark()
+    helper.assist()
+
+ServiceDog inherits the bark method from Dog and adds an assist method.
+Use inheritance when the relationship between the classes makes sense;
+not every program needs it.
+
+
+14. COMPREHENSIONS, ITERATORS, AND GENERATORS
+=============================================
+
+A list comprehension creates a list using a compact expression:
+
+    squares = [number * number for number in range(5)]
+    print(squares)
+
+This is similar to:
+
+    squares = []
+
+    for number in range(5):
+        squares.append(number * number)
+
+A condition can filter the results:
+
+    even_numbers = [number for number in range(10)
+                    if number % 2 == 0]
+
+An iterable is something you can loop over, such as a list or string.
+An iterator provides items one at a time as a program requests them.
+
+A generator is a convenient way to produce a sequence gradually using
+yield:
+
+    def count_up_to(limit):
+        number = 1
+        while number <= limit:
+            yield number
+            number += 1
+
+    for value in count_up_to(3):
+        print(value)
+
+Each time the loop requests another value, the generator continues until
+it reaches the next yield. Generators can be useful for processing large
+sequences without building the entire sequence in memory at once.
+
+
+15. DECORATORS AND CONTEXT MANAGERS
+===================================
+
+A decorator is a function that wraps another function to add behavior.
+Decorators often use the @ syntax:
+
+    def announce(function):
+        def wrapper():
+            print("Starting the function.")
+            function()
+            print("Finished the function.")
+        return wrapper
+
+    @announce
+    def say_hello():
+        print("Hello!")
+
+    say_hello()
+
+The decorator changes what happens when say_hello is called: the wrapper
+prints a message before and after the original function.
+
+A context manager manages a resource or a temporary operation. The
+with statement is the most common way to use one:
+
+    with open("notes.txt", "r", encoding="utf-8") as file:
+        contents = file.read()
+
+When the with block ends, Python closes the file automatically. This
+helps avoid leaving files open if an error occurs.
+
+
+16. TESTING, DEBUGGING, TYPE HINTS, AND CODE STYLE
+=================================================
+
+Testing
+-------
+A test checks whether code produces the expected result. Python includes
+unittest. For a small manual check, you can also use assert:
+
+    def add(first_number, second_number):
+        return first_number + second_number
+
+    assert add(2, 3) == 5
+    assert add(-1, 1) == 0
+
+If an assertion is false, Python reports an AssertionError. For larger
+projects, developers commonly use a testing framework such as pytest.
+
+Debugging
+---------
+Debugging means finding and correcting problems. Helpful steps include:
+1. Read the error message and traceback.
+2. Check the line mentioned in the traceback.
+3. Print important values to see what the program is doing.
+4. Reduce the problem to a small example.
+5. Change one thing at a time and run the program again.
+
+Type hints
+----------
+Type hints document the kinds of values a function expects and returns:
+
+    def double(number: int) -> int:
+        return number * 2
+
+The hint number: int suggests that number should be an integer. The arrow
+and int suggest that the function returns an integer. Type hints help
+readers and tools; by default, Python does not automatically enforce
+them at runtime.
+
+Code style
+----------
+Clear formatting makes code easier to read:
+- Use four spaces for indentation.
+- Use descriptive names.
+- Keep functions focused on one job.
+- Add comments when they explain why something is done.
+- Use blank lines to separate related sections.
+
+Example:
+
+    # Calculate the cost for all items.
+    price_per_item = 4.50
+    item_count = 3
+    total_cost = price_per_item * item_count
+
+    print(f"Total cost: ${total_cost:.2f}")
+
+
+17. CONCURRENCY AND ASYNCHRONOUS PYTHON
+=======================================
+
+Concurrency is a way to manage multiple tasks during the same period.
+Different techniques suit different kinds of work.
+
+- Threading is often useful when tasks spend time waiting for input or
+  network responses.
+- Multiprocessing can use multiple processes for work that needs
+  significant CPU computation.
+- Asynchronous programming can handle many waiting operations using
+  async and await.
+
+A small asynchronous example:
+
+    import asyncio
+
+    async def greet():
+        print("Hello")
+        await asyncio.sleep(1)
+        print("Goodbye")
+
+    asyncio.run(greet())
+
+An async function is defined with async def. await pauses that function
+while the awaited operation is in progress, allowing an asynchronous
+program to manage other work. Asynchronous programming is most useful
+when working with libraries designed to support it.
+
+
+18. COMMON AREAS WHERE PYTHON IS USED
+=====================================
+
+Automation:
+Python can automate repetitive tasks, such as organizing files or
+processing text. Always test automation carefully, especially when it
+modifies or deletes files.
+
+Web development:
+Web frameworks help developers build websites and web services. A web
+application may receive requests, process data, and return a response.
+
+Data analysis:
+Python libraries can help load, clean, summarize, and visualize data.
+
+Scientific computing:
+Python is used for numerical calculations, experiments, and simulations.
+
+Machine learning:
+Python libraries can be used to train models and make predictions.
+Machine learning requires additional knowledge of data, statistics, and
+the specific tools being used.
+
+These are areas to explore after learning the basic language. The Python
+fundamentals—variables, conditions, loops, functions, and data
+structures—are useful in all of them.
+
+
+19. SUGGESTED LEARNING ORDER
+============================
+
+A practical order for studying Python is:
+
+1. Running Python programs and using print().
+2. Variables, data types, and basic calculations.
+3. Input, output, and type conversion.
+4. Conditions and Boolean logic.
+5. For loops and while loops.
+6. Strings, lists, dictionaries, tuples, and sets.
+7. Functions, parameters, and return values.
+8. Files and exception handling.
+9. Modules, packages, pip, and virtual environments.
+10. Classes and objects.
+11. Testing, debugging, type hints, and code style.
+12. Comprehensions, generators, decorators, and concurrency.
+13. Libraries for a specific goal, such as web development or data work.
+
+A good way to learn is to type each example yourself, run it, change
+some values, and predict what will happen before you run it. Small
+practice programs—such as a calculator, a guessing game, or a shopping
+total—help connect the topics.
+
+
+20. SMALL PRACTICE PROGRAM
+==========================
+
+This example combines input, variables, conversion, arithmetic, and
+formatted output:
+
+    item_name = input("What item are you buying? ")
+    price = float(input("What is the price of one item? "))
+    quantity = int(input("How many are you buying? "))
+
+    total = price * quantity
+
+    print(f"You are buying {quantity} {item_name}(s).")
+    print(f"Your total is ${total:.2f}.")
+
+How it works:
+1. input() asks the user for information.
+2. The first input is kept as text in item_name.
+3. float() converts the price text into a decimal number.
+4. int() converts the quantity text into a whole number.
+5. Python multiplies price by quantity and assigns the answer to total.
+6. The f-strings insert variable values into the output.
+7. :.2f displays the total with two decimal places.
+
+This program expects valid numeric input. If the user types words where
+a number is expected, the conversion will raise an exception. The
+exception-handling section explains how to handle that situation.
