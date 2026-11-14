@@ -1,0 +1,681 @@
+MY PYTHON NOTES - FROM MORNING TO NOW - VARIABLE TO NUMPY
+For Hyarel - Simple Brother Style - Study Purpose
+====================================================
+
+1. VARIABLE - WHAT IS VARIABLE?
+-------------------------------
+Variable = Dabba / Box to store value.
+Like chai dabba, you put chai inside, you take name and use it.
+
+What is use? - To store data and reuse later, not write same value again and again.
+
+Command / Code:
+name = "Hyarel"
+balance = 1000
+print(name)
+print(balance)
+
+Output:
+Hyarel
+1000
+
+How it works:
+name = "Hyarel" -> Make box named name, put Hyarel inside.
+balance = 1000 -> Make box named balance, put 1000 inside.
+print(name) -> Show what is inside name box.
+
+
+2. DATA TYPES
+-------------
+Data types = What type of thing inside box? String? Number?
+
+Types:
+str = Text - "Hyarel"
+int = Full number - 1000
+float = Point number - 1000.5
+bool = True / False - True
+
+Code:
+name = "Hyarel"  # str
+age = 25  # int
+balance = 1000.5  # float
+is_approved = True  # bool
+print(type(name))
+print(type(age))
+print(type(balance))
+print(type(is_approved))
+
+Output:
+<class 'str'>
+<class 'int'>
+<class 'float'>
+<class 'bool'>
+
+
+3. LIST
+-------
+List = Many values in one box, in order, can change. Like shopping list.
+
+Code:
+balances = [1000, 500, 2000]
+print(balances)
+print(balances[0])  # First - 1000
+balances.append(3000)  # Add new
+print(balances)
+
+Output:
+[1000, 500, 2000]
+1000
+[1000, 500, 2000, 3000]
+
+
+4. DICTIONARY
+-------------
+Dictionary = Key : Value pair. Like Aadhar card - Name -> Hyarel, Age -> 25.
+
+Code:
+user = {"name": "Hyarel", "age": 25, "city": "Pune"}
+print(user)
+print(user["name"])
+user["balance"] = 1000
+print(user)
+
+Output:
+{'name': 'Hyarel', 'age': 25, 'city': 'Pune'}
+Hyarel
+{'name': 'Hyarel', 'age': 25, 'city': 'Pune', 'balance': 1000}
+
+
+5. TUPLE
+--------
+Tuple = Like List, but cannot change. Fixed. Like X=11, Y=12, Z=1 - Fixed time.
+
+Code:
+timing = (11, 12, 1)
+print(timing)
+print(timing[0])
+
+Output:
+(11, 12, 1)
+11
+
+
+6. SET
+------
+Set = No duplicate, no order. Like unique names.
+
+Code:
+cities = {"Pune", "Mumbai", "Pune"}
+print(cities)
+
+Output:
+{'Pune', 'Mumbai'}  # Pune one time only, duplicate removed.
+
+
+7. OPERATORS
+------------
+Operators = Maths + Compare.
+
+Code:
+a = 10
+b = 3
+print(a + b)  # Add - 13
+print(a - b)  # Sub - 7
+print(a * b)  # Mul - 30
+print(a / b)  # Div - 3.33
+print(a > b)  # Greater - True
+print(a == b)  # Equal - False
+
+Output:
+13
+7
+30
+3.3333333333333335
+True
+False
+
+
+8. IF-ELSE
+-----------
+If-Else = Decision. If CIBIL good, approve, else reject.
+
+Code:
+cibil = 750
+if cibil >= 700:
+    print("Loan Approved")
+else:
+    print("Loan Rejected")
+
+Output:
+Loan Approved
+
+
+9. LOOPS - FOR LOOP + WHILE LOOP
+--------------------------------
+Loop = Repeat work. Like give chai to 3 persons, same work 3 times.
+
+For Loop Code:
+for i in [1000, 500, 2000]:
+    print(i)
+
+While Loop Code:
+count = 1
+while count <= 3:
+    print(f"Chai {count}")
+    count = count + 1
+
+Output For Loop:
+1000
+500
+2000
+
+Output While Loop:
+Chai 1
+Chai 2
+Chai 3
+
+
+10. OOPS - OBJECT ORIENTED PROGRAMMING - FULL EXPLANATION
+----------------------------------------------------------
+OOPS = Real life in code.
+
+Class = Blueprint / Design. Like house plan. House plan is not house, it is design.
+Object = Real house made from plan. You can make many houses from one plan.
+__init__ = Constructor - When you make object, __init__ runs automatically and saves values.
+self = This object. self.name means this object's name.
+Method = Function inside Class. Work of Class. Like show() = show balance.
+Inheritance = Child gets Father's property + methods free. Child class (Parent).
+Polymorphism = Same function name, different work in Parent and Child.
+
+Parent + Child Full Code:
+class BankAccount:  # Parent - Father
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+    def show(self):
+        return f"{self.name} has {self.balance} rupees"
+
+class SavingsAccount(BankAccount):  # Child - Son - Father is BankAccount
+    def __init__(self, name, balance, interest):
+        super().__init__(name, balance)  # Call Father __init__
+        self.interest = interest
+    def add_interest(self):  # Child Method 1
+        self.balance = self.balance + self.interest
+        return f"{self.name} new balance is {self.balance}"
+    def show_interest(self):  # Child Method 2
+        return f"{self.name} interest is {self.interest}"
+
+# Object - Parent Object
+a1 = BankAccount("Hyarel", 1000)
+print(a1.show())  # Recall Father method
+
+# Object - Child Object - Needs name, balance, interest
+s1 = SavingsAccount("Priya", 1000, 100)
+print(s1.show())  # Recall Father method - Free for Child
+print(s1.add_interest())  # Recall Child Method 1
+print(s1.show_interest())  # Recall Child Method 2
+
+Output:
+Hyarel has 1000 rupees
+Priya has 1000 rupees
+Priya new balance is 1100
+Priya interest is 100
+
+How OOPS works:
+- BankAccount is Parent, SavingsAccount is Child.
+- Child object s1 has 3 values - name, balance from Father + interest own.
+- super().__init__ calls Father to save name, balance.
+- s1.show() - Child uses Father's show free - Inheritance.
+- s1.add_interest() - Child uses own method.
+
+
+11. FILE HANDLING
+-----------------
+File Handling = Save data in file, read later. Like notebook.
+
+Code:
+with open("account.txt", "w") as f:
+    f.write("Hyarel has 1000")
+
+with open("account.txt", "r") as f:
+    print(f.read())
+
+Output:
+Hyarel has 1000
+
+w = Write, r = Read.
+
+
+12. EXCEPTION HANDLING - TRY / EXCEPT
+--------------------------------------
+Exception = Error. Try / Except = If error comes, don't crash, show friendly message.
+
+Code:
+try:
+    balance = int("hello")  # Error - hello is not number
+    print(balance)
+except Exception as e:
+    print("Error came - Please give number only")
+    print(e)
+
+Output:
+Error came - Please give number only
+invalid literal for int() with base 10: 'hello'
+
+
+13. MODULES
+-----------
+Module = Ready toolbox from Python or others. Import and use.
+
+Code:
+import math
+print(math.sqrt(16))
+
+Output:
+4.0
+
+
+14. JSON
+--------
+JSON = Data format for API. Like Dict, but for sending between FastAPI and Frontend.
+
+Code:
+import json
+user = {"name": "Hyarel", "balance": 1000}
+json_text = json.dumps(user)  # Dict -> JSON string
+print(json_text)
+print(type(json_text))
+back = json.loads(json_text)  # JSON string -> Dict
+print(back["name"])
+
+Output:
+{"name": "Hyarel", "balance": 1000}
+<class 'str'>
+Hyarel
+
+
+15. LIST COMPREHENSION
+----------------------
+List Comprehension = Short loop to make list in 1 line.
+
+Old:
+new = []
+for b in [1000, 500, 2000]:
+    new.append(b + 100)
+print(new)
+
+New - List Comprehension:
+new = [b + 100 for b in [1000, 500, 2000]]
+print(new)
+
+Output Both:
+[1100, 600, 2100]
+
+
+16. DICTIONARY COMPREHENSION
+----------------------------
+Dict Comprehension = Short loop to make dict in 1 line.
+
+Code:
+names = ["Hyarel", "Priya"]
+balances = {name: 1000 for name in names}
+print(balances)
+
+Output:
+{'Hyarel': 1000, 'Priya': 1000}
+
+
+17. ITERATOR
+------------
+Iterator = One by one giver. next() gives next item.
+
+Code:
+balances = [1000, 500, 2000]
+it = iter(balances)
+print(next(it))
+print(next(it))
+print(next(it))
+
+Output:
+1000
+500
+2000
+
+
+18. GENERATOR
+-------------
+Generator = Lazy giver - Gives one by one, saves memory. Uses yield, not return.
+
+Code:
+def give_chai(n):
+    for i in range(1, n+1):
+        yield f"Chai {i}"
+
+for chai in give_chai(3):
+    print(chai)
+
+Output:
+Chai 1
+Chai 2
+Chai 3
+
+
+19. DATACLASS - ADVANCED
+------------------------
+Dataclass = Shortcut to make Class. No need to write __init__ yourself.
+
+Old - Normal Class - You write __init__:
+class BankAccount:
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+    def show(self):
+        return f"{self.name} has {self.balance} rupees"
+
+New - Dataclass - Python writes __init__ for you:
+from dataclasses import dataclass
+
+@dataclass
+class BankAccount:
+    name: str
+    balance: float
+    def show(self):
+        return f"{self.name} has {self.balance} rupees"
+
+a1 = BankAccount("Hyarel", 1000)
+print(a1.show())
+
+Output Both:
+Hyarel has 1000 rupees
+
+Dataclass Parent + Child - Full:
+from dataclasses import dataclass
+
+@dataclass
+class BankAccount:
+    name: str
+    balance: float
+    def show(self):
+        return f"{self.name} has {self.balance} rupees"
+
+@dataclass
+class SavingsAccount(BankAccount):
+    interest: float
+    def add_interest(self):
+        self.balance = self.balance + self.interest
+        return f"{self.name} new balance with interest is {self.balance}"
+    def show_interest(self):
+        return f"{self.name} interest is {self.interest}"
+
+a1 = BankAccount("Hyarel", 1000)
+print(a1.show())
+s1 = SavingsAccount("Priya", 1000, 100)
+print(s1.show())
+print(s1.add_interest())
+print(s1.show_interest())
+
+Output:
+Hyarel has 1000 rupees
+Priya has 1000 rupees
+Priya new balance with interest is 1100
+Priya interest is 100
+
+Important: Rest all same. Only __init__ replaced by @dataclass. In Dataclass Child, no need super().__init__, Python does automatically.
+Dataclass = Less code, same work.
+
+
+20. TYPING - ADVANCED
+---------------------
+Typing = Like Comments, but better. Comments = For human only, Python ignores. Typing = For human + VS Code + FastAPI, checks error.
+
+Code:
+name: str = "Hyarel"
+balance: float = 1000.0
+
+def add_interest(amount: float) -> float:
+    return amount + 100
+
+print(add_interest(1000.0))
+
+Output:
+1100.0
+
+Advantages of Typing:
+1. Early warning - VS Code shows red line if you give wrong type.
+2. Readable - Other person sees amount is float, return is float in 1 second.
+3. FastAPI uses Typing to check API automatically. If user sends String for balance, FastAPI rejects.
+Typing is like Comments - Note + Check. Comments is only Note.
+
+
+21. PATHLIB - ADVANCED
+----------------------
+Pathlib = Advanced File Handling. Short, clean, works on Windows + Linux both.
+
+Old:
+with open("account.json", "w") as f:
+    f.write("Hyarel has 1000")
+with open("account.json", "r") as f:
+    print(f.read())
+
+New - Pathlib - Functions, not Commands:
+from pathlib import Path
+file_path = Path("account.json")
+file_path.write_text("Hyarel has 1000")
+print(file_path.read_text())
+print(file_path.exists())
+print(file_path.is_file())
+
+Output New:
+Hyarel has 1000
+True
+True
+
+Commands vs Functions:
+Commands = Terminal - ls, cd, pip install, python app.py - Outside Python.
+Functions = Inside Python code - print(), write_text(), read_text(), exists(), is_file() - With () bracket.
+Pathlib ones are Functions, not Commands.
+
+
+22. LOGGING - ADVANCED
+----------------------
+Logging = Advanced Print. Print shows once, disappears. Logging shows + saves in file + shows time + level.
+
+Old:
+print("File saved")
+print("Error came")
+
+New:
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", filename="app.log", filemode="w")
+logging.info("File saved")
+logging.warning("Balance is low")
+logging.error("File not found")
+print("Done - Check app.log file")
+
+Output in app.log file:
+2026-11-14 15:30:10 - INFO - File saved
+2026-11-14 15:30:10 - WARNING - Balance is low
+2026-11-14 15:30:10 - ERROR - File not found
+
+Levels - Like Traffic Light:
+INFO = Green - Everything OK - "File saved"
+WARNING = Yellow - Careful - "Balance is low"
+ERROR = Red - Problem - "File not found"
+
+
+23. PYDANTIC - ADVANCED
+-----------------------
+Pydantic = Automatic Checker / Guard. Checks data before code runs. FastAPI uses Pydantic inside.
+
+Old - You check yourself:
+name = "Hyarel"
+age = "twenty-five"
+if type(age) != int:
+    print("Error - Age must be number")
+
+New - Pydantic checks automatically:
+from pydantic import BaseModel
+
+class LoanForm(BaseModel):
+    name: str
+    age: int
+    balance: float
+
+form1 = LoanForm(name="Hyarel", age=25, balance=1000.0)
+print(form1)
+
+try:
+    form2 = LoanForm(name="Priya", age="twenty-five", balance=1000.0)
+    print(form2)
+except Exception as e:
+    print("Pydantic Error - Age must be number")
+    print(e)
+
+Output:
+name='Hyarel' age=25 balance=1000.0
+Pydantic Error - Age must be number
+1 validation error for LoanForm
+age
+  Input should be a valid integer
+
+
+24. PANDAS - ADVANCED
+---------------------
+Pandas = Excel in Python. For 1 lakh rows. Filter, Count, Group in 1 line.
+
+Old - List + Loop - 4 lines to count approved:
+users = [
+    {"name": "Hyarel", "balance": 1000, "city": "Pune", "approved": "Yes"},
+    {"name": "Priya", "balance": 500, "city": "Mumbai", "approved": "No"},
+    {"name": "Rahul", "balance": 2000, "city": "Pune", "approved": "Yes"},
+]
+count = 0
+for u in users:
+    if u["approved"] == "Yes":
+        count = count + 1
+print(count)
+
+New - Pandas - 1 line:
+import pandas as pd
+df = pd.DataFrame([
+    {"name": "Hyarel", "balance": 1000, "city": "Pune", "approved": "Yes"},
+    {"name": "Priya", "balance": 500, "city": "Mumbai", "approved": "No"},
+    {"name": "Rahul", "balance": 2000, "city": "Pune", "approved": "Yes"},
+])
+print(df)
+print(df[df["approved"] == "Yes"])
+print(len(df[df["approved"] == "Yes"]))
+print(df["balance"].sum())
+print(df["balance"].mean())
+print(df[df["city"] == "Pune"])
+
+Output:
+     name  balance    city approved
+0  Hyarel     1000    Pune      Yes
+1   Priya      500  Mumbai       No
+2   Rahul     2000    Pune      Yes
+Approved count = 2
+Total = 3500
+Average = 1166.66
+
+
+25. PYTEST - ADVANCED
+---------------------
+Pytest = Automatic Tester. Your job - Test only + Deploy. Old - Manual test with eyes. New - Pytest tests automatically, says Pass / Fail.
+
+File 1 - bank.py - Your code:
+class BankAccount:
+    def __init__(self, name, balance):
+        self.name = name
+        self.balance = balance
+    def show(self):
+        return f"{self.name} has {self.balance} rupees"
+
+File 2 - test_bank.py - Test file - Must start with test_:
+from bank import BankAccount
+def test_hyarel_balance():
+    a1 = BankAccount("Hyarel", 1000)
+    assert a1.show() == "Hyarel has 1000 rupees"
+def test_priya_balance():
+    a2 = BankAccount("Priya", 500)
+    assert a2.show() == "Priya has 500 rupees"
+
+Command in Terminal:
+pytest test_bank.py -v
+
+Output:
+test_bank.py::test_hyarel_balance PASSED
+test_bank.py::test_priya_balance PASSED
+2 passed in 0.02s
+
+assert = Check - If left == right, Pass, else Fail.
+Before deploy, run Pytest - If all Pass, deploy. If Fail, fix first.
+
+
+26. MATPLOTLIB - ADVANCED
+-------------------------
+Matplotlib = Graph maker - Draw graphs, charts, pie charts in Python. Like Grafana pie chart, but in Python.
+
+Code:
+import matplotlib.pyplot as plt
+labels = ["Approved", "Not Approved"]
+values = [2, 1]
+plt.pie(values, labels=labels)
+plt.title("Loan Approved - Pie Chart")
+plt.show()
+
+Output - Pie Chart:
+Approved - 2 - 67% - Big piece
+Not Approved - 1 - 33% - Small piece
+
+Other graphs:
+Bar Graph - How many queries each day?
+Line Graph - CPU going up, down? Like Grafana CPU graph.
+Pie Chart - Approved vs Not Approved.
+
+Old - print numbers only - print("Approved 2, Not Approved 1")
+New - Matplotlib - Show picture - Easy to understand in 1 second.
+
+
+27. NUMPY - ADVANCED
+--------------------
+Numpy = Fast Maths for Big Numbers. List is good for 10 numbers. Numpy is good for 1 lakh numbers. Fast maths in 1 line.
+
+Old - List - Need loop - Slow:
+balances = [1000, 500, 2000]
+new_balances = []
+for b in balances:
+    new_balances.append(b + 100)
+print(new_balances)
+Output: [1100, 600, 2100]
+
+New - Numpy - No loop - Fast:
+import numpy as np
+balances = np.array([1000, 500, 2000])
+new_balances = balances + 100
+print(new_balances)
+print(balances.mean())
+print(balances.sum())
+print(balances.max())
+
+Output:
+[1100  600 2100]
+1166.66
+3500
+2000
+
+How it works:
+import numpy as np - Take toolbox, np is short name.
+np.array([...]) - Make Numpy Array - Like List but fast.
+balances + 100 - Adds 100 to all at once - List cannot do this, Numpy can.
+mean() - Average, sum() - Total, max() - Biggest.
+
+Why Numpy?
+Pandas uses Numpy inside.
+Matplotlib uses Numpy inside.
+AI / ML needs Numpy - Vectors in ChromaDB are Numpy arrays.
+
+====================================================
+END - ALL TOPICS FROM VARIABLE TO NUMPY - DONE
+Study slowly, one by one, Nampai. You got it.
+====================================================
