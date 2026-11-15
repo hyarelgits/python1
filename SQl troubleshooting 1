@@ -1,0 +1,214 @@
+SQL TROUBLESHOOTING - LOGIN & TABLES - WHAT WE DISCUSSED
+Brother - Pure English Only - DevOps + Backend
+
+============================================================
+1. HOW TO LOGIN TO SQLITE
+============================================================
+Command to open database file:
+  sqlite3 my_loan.db
+
+You will see:
+  SQLite version 3.53.4
+  Enter ".help" for usage hints.
+  sqlite>
+
+sqlite> = SQLite prompt, not Ubuntu prompt
+$ = Ubuntu prompt (dollar prompt)
+
+To come out of SQLite:
+  .exit
+  OR
+  .quit
+  OR Ctrl + D = Clean exit
+  OR Ctrl + C = Force exit (goes to $ prompt, data is safe)
+
+============================================================
+2. HOW TO CHECK TABLES
+============================================================
+See all tables:
+  .tables
+  Example output: loan_table
+
+See structure of one table:
+  .schema loan_table
+  Example output: CREATE TABLE loan_table (name TEXT, cibil INT);
+
+See structure of all tables:
+  .schema
+
+See data inside table:
+  SELECT * FROM loan_table;
+
+Count rows:
+  SELECT COUNT(*) FROM loan_table;
+  Output 0 = Table is empty, no error. Empty notebook = no output.
+
+============================================================
+3. BIGGEST ERROR - SEMICOLON ; vs COLON :
+============================================================
+In SQLite, every command must end with ; = Semicolon.
+Not : = Colon.
+
+Semicolon key = Near L key, without Shift.
+Colon key = Shift + Semicolon.
+
+Wrong:
+  SELECT * FROM loan_table:   -> Error: Unrecognized token: ":"
+
+Right:
+  SELECT * FROM loan_table;
+
+Rule: Type command + ; + Then Press Enter.
+Not: Type command + Press Enter + Then Type ;
+
+============================================================
+4. WHAT IS ...> PROMPT ?
+============================================================
+...> means SQLite is waiting, command is not finished because you forgot ;
+
+Example:
+  sqlite> SELECT * FROM loan_table
+  ...>   <- Waiting
+
+How to come out of ...> and STAY inside SQLite:
+  Type only ; and press Enter.
+  It will show error, ignore it, it will come back to sqlite> prompt.
+
+How to come out and EXIT SQLite:
+  Press Ctrl + C -> Goes to $ prompt
+  OR Type .exit
+
+Do NOT press Ctrl + C if you want to stay inside SQLite.
+Ctrl + C = Exit to $ prompt.
+; + Enter = Stay inside SQLite, clear stuck command.
+
+If you type new command while still in ...>, old command + new command join together and give wrong error. Always clear old command first with ; or exit and login again.
+
+============================================================
+5. TABLE HAS 2 COLUMNS BUT 5 VALUES ERROR
+============================================================
+Your table:
+  CREATE TABLE loan_table (name TEXT, cibil INT);
+  -> 2 columns only: name, cibil
+
+Error:
+  table loan_table has 2 columns but 5 values were supplied
+
+Meaning: You gave more values than columns.
+
+Wrong - 5 values in 1 bracket:
+  INSERT INTO loan_table VALUES ('Hyarel', 750, 'Priya', 680, 'Rahul');
+  Count inside ( ) = 5 values. Table has 2 columns. Fail.
+
+Right - 1 record = 2 values in 1 bracket:
+  INSERT INTO loan_table VALUES ('Hyarel', 750);
+  Count inside ( ) = 2 values. 1 comma = 2 values = Correct.
+  4 commas = 5 values = Wrong.
+
+Counting Rule: Count commas inside ( ).
+  1 comma = 2 values = Correct for this table.
+
+============================================================
+6. 5 RECORDS vs 5 VALUES - CONFUSION
+============================================================
+Value = One piece: 'Hyarel' is 1 value, 750 is 1 value.
+Record / Row = One person: ('Hyarel', 750) is 1 record, but has 2 values.
+
+1 record = 2 values
+5 records = 5 x 2 = 10 values, but in 5 separate brackets, not in 1 bracket.
+
+Wrong - 1 bracket with 10 values:
+  INSERT INTO loan_table VALUES ('Hyarel', 750, 'Priya', 680, 'Rahul', 550, 'Sneha', 720, 'Amit', 600);
+
+Right - 5 brackets, each with 2 values:
+  INSERT INTO loan_table VALUES ('Hyarel', 750), ('Priya', 680), ('Rahul', 550), ('Sneha', 720), ('Amit', 600);
+
+Easiest for beginner - 5 separate INSERTs, one by one:
+  INSERT INTO loan_table VALUES ('Hyarel', 750);
+  INSERT INTO loan_table VALUES ('Priya', 680);
+  INSERT INTO loan_table VALUES ('Rahul', 550);
+  INSERT INTO loan_table VALUES ('Sneha', 720);
+  INSERT INTO loan_table VALUES ('Amit', 600);
+
+Clearer way - With column names:
+  INSERT INTO loan_table (name, cibil) VALUES ('Hyarel', 750);
+
+============================================================
+7. WHY YESTERDAY WORKED AND TODAY FAILED
+============================================================
+Yesterday table had 5 columns:
+  CREATE TABLE loan_table (id INTEGER, name TEXT, cibil INT, salary INT, city TEXT);
+  -> INSERT with 5 values worked: VALUES (1, 'Hyarel', 750, 80000, 'Mumbai');
+
+Today table has 2 columns:
+  CREATE TABLE loan_table (name TEXT, cibil INT);
+  -> Same 5-values INSERT fails today.
+
+Same command works in one table, fails in another table, because table definition changed.
+Also different .db file = different notebook. Yesterday records are in yesterday file, not in today file my_loan.db.
+
+Check files:
+  ls -l *.db
+  sqlite3 loan.db   -> Yesterday file
+  sqlite3 my_loan.db -> Today file
+
+============================================================
+8. CRUD - CREATE, READ, UPDATE, DELETE
+============================================================
+CREATE - Make table:
+  CREATE TABLE loan_table (name TEXT, cibil INT);
+
+READ - See data:
+  SELECT * FROM loan_table;
+  SELECT * FROM loan_table WHERE name = 'Hyarel';
+
+INSERT - Add record:
+  INSERT INTO loan_table VALUES ('Hyarel', 750);
+  INSERT INTO loan_table (name, cibil) VALUES ('Hyarel', 750);
+
+UPDATE - Modify CIBIL number (CIBIL, not civil):
+  UPDATE loan_table SET cibil = 780 WHERE name = 'Hyarel';
+  Never UPDATE without WHERE, otherwise all records become 780.
+  Before UPDATE, always do SELECT with same WHERE to confirm person.
+
+DELETE - Remove one record:
+  DELETE FROM loan_table WHERE name = 'Rahul';
+  Never DELETE without WHERE, otherwise all records deleted.
+  Before DELETE, always do SELECT with same WHERE to confirm person.
+
+DROP - Remove full table:
+  DROP TABLE loan_table;
+  Table + data both gone.
+
+============================================================
+9. GOLDEN RULES
+============================================================
+1. Every command ends with ; before you press Enter.
+2. If you see ...>, type ; and press Enter to clear, or .exit and login again.
+3. Do NOT type new command while still in ...>, old + new will join and give wrong error.
+4. No output after SELECT = Table is empty, not error. Check with SELECT COUNT(*).
+5. No output after INSERT / UPDATE / DELETE = Success, command worked.
+6. Before UPDATE / DELETE, always do SELECT with same WHERE.
+7. 1 INSERT = 1 Record = 2 Values for this table.
+8. 5 Records = 5 INSERTs.
+9. Count commas inside ( ): 1 comma = 2 values = Correct.
+10. Single quotes ' ' for name, no quotes for number. Example: ('Hyarel', 750)
+
+============================================================
+PRACTICE SEQUENCE - COPY ONE BY ONE
+============================================================
+  sqlite3 my_loan.db
+  .tables
+  .schema loan_table
+  SELECT COUNT(*) FROM loan_table;
+  INSERT INTO loan_table VALUES ('Hyarel', 750);
+  INSERT INTO loan_table VALUES ('Priya', 680);
+  INSERT INTO loan_table VALUES ('Rahul', 550);
+  INSERT INTO loan_table VALUES ('Sneha', 720);
+  INSERT INTO loan_table VALUES ('Amit', 600);
+  SELECT * FROM loan_table;
+  UPDATE loan_table SET cibil = 780 WHERE name = 'Hyarel';
+  SELECT * FROM loan_table;
+  DELETE FROM loan_table WHERE name = 'Rahul';
+  SELECT * FROM loan_table;
+  .exit
