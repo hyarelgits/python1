@@ -1,0 +1,339 @@
+AI PROJECT - COMPLETE STEPS - LOAN + SHOPKEEPER AI + RAG
+====================================================
+For: Hyarel Sonawane
+Folder: ~/ai_project
+Goal: SQL + Pandas + AI Model + FastAPI + RAG + ChromaDB
+Language: Simple English, Execute in Ubuntu VM
+
+====================================================
+STEP 0 - GO TO WORK FOLDER - CREATE NEW FOLDER
+====================================================
+Type in $ prompt (Ubuntu prompt, not sqlite> prompt):
+mkdir -p ~/ai_project
+cd ~/ai_project
+pwd
+
+Output:
+ /home/hyarelgits/ai_project
+
+You are now inside ai_project folder.
+
+====================================================
+STEP 1 - INSTALL LIBRARIES
+====================================================
+Type:
+pip3 install pandas scikit-learn fastapi uvicorn
+
+Wait 2 minutes. Don't press Ctrl+C.
+
+Check:
+python3 -c "import pandas, sklearn, fastapi; print('Ready')"
+
+Output:
+ Ready
+
+For RAG later:
+pip3 install chromadb langchain langchain-community
+
+====================================================
+STEP 2 - CREATE TRAIN FILE - train.py
+====================================================
+Type:
+nano train.py
+
+Paste this full code inside nano:
+--------------------------------
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+import pickle
+
+df = pd.DataFrame({
+    'name': ['Hyarel', 'Priya', 'Rahul', 'Sneha', 'Amit', 'Ramesh', 'Suresh', 'Anjali'],
+    'cibil': [750, 680, 550, 720, 600, 800, 580, 690],
+    'approved': [1, 1, 0, 1, 0, 1, 0, 1]
+})
+
+print(df)
+
+X = df[['cibil']]
+y = df['approved']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+print("X_train:", X_train.values.tolist())
+print("X_test:", X_test.values.tolist())
+print("Real:", y_test.tolist())
+print("Predicted:", model.predict(X_test).tolist())
+print("Accuracy:", model.score(X_test, y_test))
+
+with open('loan_model.pkl', 'wb') as f:
+    pickle.dump(model, f)
+
+print("Model Saved - loan_model.pkl")
+--------------------------------
+
+Save in nano:
+- Press Ctrl + X
+- Press Y
+- Press Enter
+
+Explanation:
+- X = CIBIL, y = Approved 1/0
+- train_test_split test_size=0.2 = Train 6, Test 2. Shuffle, no value change, only group change.
+- LogisticRegression = Supervised, Yes/No model
+- fit(X_train, y_train) = Train on Train only
+- predict(X_test) = Predict on Test only
+- pickle.dump = Save model to file loan_model.pkl
+
+====================================================
+STEP 3 - RUN TRAIN FILE
+====================================================
+Type:
+python3 train.py
+
+Output you will see:
+   name  cibil  approved
+0  Hyarel    750         1
+1   Priya    680         1
+2   Rahul    550         0
+3   Sneha    720         1
+4    Amit    600         0
+5  Ramesh    800         1
+6  Suresh    580         0
+7  Anjali    690         1
+X_train: [[750], [690], [550], [600], [720], [580]]
+X_test: [[680], [800]]
+Real: [1, 1]
+Predicted: [1, 1]
+Accuracy: 1.0
+Model Saved - loan_model.pkl
+
+Meaning:
+- X_train 6 numbers for learning
+- X_test 2 numbers for exam - 680, 800
+- Real [1,1] = Both Yes
+- Predicted [1,1] = Model guessed Both Yes
+- Accuracy 1.0 = 100% - 2 out of 2 correct
+
+Check file created:
+ls -l
+
+Output:
+ loan_model.pkl  train.py
+
+====================================================
+STEP 4 - CREATE FASTAPI FILE - main.py
+====================================================
+Type:
+nano main.py
+
+Paste this full code:
+--------------------------------
+from fastapi import FastAPI
+import pickle
+
+app = FastAPI()
+model = pickle.load(open('loan_model.pkl', 'rb'))
+
+@app.get("/")
+def home():
+    return {"message": "Loan AI is running"}
+
+@app.get("/predict/{cibil}")
+def predict(cibil: int):
+    result = model.predict([[cibil]])
+    return {"cibil": cibil, "approved": int(result[0])}
+--------------------------------
+
+Save:
+- Press Ctrl + X
+- Press Y
+- Press Enter
+
+Explanation:
+- FastAPI = Backend, serves model as API
+- pickle.load = Load saved model, no need to train again
+- /predict/{cibil} = API endpoint, you give CIBIL, it returns Approved 1 or 0
+
+====================================================
+STEP 5 - RUN FASTAPI SERVER
+====================================================
+Type:
+uvicorn main:app --reload --port 8000
+
+Output:
+ INFO: Uvicorn running on http://127.0.0.1:8000
+
+Don't close this terminal. Keep it running. Open new terminal for next step - Press Ctrl + Shift + T for new terminal.
+
+====================================================
+STEP 6 - TEST IN NEW TERMINAL - SECOND TERMINAL
+====================================================
+In new terminal, go to same folder:
+cd ~/ai_project
+
+Test 1 - Home:
+curl http://127.0.0.1:8000/
+
+Output:
+ {"message":"Loan AI is running"}
+
+Test 2 - CIBIL 700 - Should be Approved:
+curl http://127.0.0.1:8000/predict/700
+
+Output:
+ {"cibil":700,"approved":1}
+
+Test 3 - CIBIL 500 - Should be Rejected:
+curl http://127.0.0.1:8000/predict/500
+
+Output:
+ {"cibil":500,"approved":0}
+
+Test 4 - CIBIL 850:
+curl http://127.0.0.1:8000/predict/850
+
+Output:
+ {"cibil":850,"approved":1}
+
+====================================================
+STEP 7 - STOP SERVER
+====================================================
+Go back to first terminal where uvicorn is running, press:
+Ctrl + C
+
+Server stopped.
+
+====================================================
+STEP 8 - RAG PART - AFTER MODEL - CHROMADB + LANGCHAIN
+====================================================
+You already know RAG, LangChain, ChromaDB from last 2-3 weeks. Now connect RAG to same project.
+
+Model = For Numbers - CIBIL 700 -> 1 or 0
+RAG = For Words - "Hyarel?" -> Full sentence answer
+
+Install:
+pip3 install chromadb langchain langchain-community
+
+Create file:
+nano rag.py
+
+Paste this code:
+--------------------------------
+import chromadb
+
+# 1. Store - Put loan data in ChromaDB
+client = chromadb.Client()
+collection = client.create_collection(name="loan_data")
+
+collection.add(
+    documents=[
+        "Hyarel CIBIL 750 Approved Yes, Bought Sugar 90 and Oil 150",
+        "Priya CIBIL 680 Approved Yes, Bought Rice 250",
+        "Rahul CIBIL 550 Approved No, Bought Tea 50",
+    ],
+    ids=["1", "2", "3"]
+)
+
+# 2. Retrieve - User asks question
+question = "What is Hyarel CIBIL and what did he buy?"
+results = collection.query(query_texts=[question], n_results=1)
+
+print("Question:", question)
+print("Retrieved:", results['documents'][0][0])
+
+# 3. Generate - Simple answer (In real project, LLM makes this nice)
+print("Answer: Hyarel CIBIL 750, Approved Yes, Bought Sugar 90 and Oil 150")
+--------------------------------
+
+Save: Ctrl + X, Y, Enter
+
+Run:
+python3 rag.py
+
+Output:
+ Question: What is Hyarel CIBIL and what did he buy?
+ Retrieved: Hyarel CIBIL 750 Approved Yes, Bought Sugar 90 and Oil 150
+ Answer: Hyarel CIBIL 750, Approved Yes, Bought Sugar 90 and Oil 150
+
+Explanation:
+- Store: Loan data -> ChromaDB
+- Retrieve: Find Hyarel data from ChromaDB for question
+- Generate: LLM / LangChain makes answer in words
+
+====================================================
+STEP 9 - UNSUPERVISED PART - KMEANS - CUSTOMER GROUPS
+====================================================
+Create file:
+nano unsupervised.py
+
+Paste:
+--------------------------------
+from sklearn.cluster import KMeans
+
+# X only - No y - CIBIL + Spending
+X = [
+    [750, 5000],
+    [680, 3000],
+    [550, 1000],
+    [720, 4500],
+    [600, 1500],
+    [800, 6000],
+    [580, 1200],
+    [700, 4000],
+]
+
+names = ['Hyarel', 'Priya', 'Rahul', 'Sneha', 'Amit', 'Ramesh', 'Suresh', 'Anjali']
+
+model = KMeans(n_clusters=3, random_state=42)
+model.fit(X)  # Only X, No y
+
+for name, group in zip(names, model.labels_):
+    print(name, "-> Group", group)
+--------------------------------
+
+Run:
+python3 unsupervised.py
+
+Output:
+ Hyarel -> Group 2
+ Priya -> Group 1
+ Rahul -> Group 0
+ Sneha -> Group 2
+ Amit -> Group 0
+ Ramesh -> Group 2
+ Suresh -> Group 0
+ Anjali -> Group 1
+
+Meaning:
+ Group 0 Small - Rahul, Amit, Suresh
+ Group 1 Medium - Priya, Anjali
+ Group 2 Rich - Hyarel, Sneha, Ramesh
+
+====================================================
+FULL CHECKLIST - TICK AFTER EACH
+====================================================
+[ ] mkdir ai_project + cd
+[ ] pip install pandas scikit-learn fastapi uvicorn
+[ ] nano train.py + python3 train.py -> Accuracy 1.0
+[ ] ls -l -> loan_model.pkl seen
+[ ] nano main.py + uvicorn main:app --reload
+[ ] curl /predict/700 -> approved 1
+[ ] curl /predict/500 -> approved 0
+[ ] nano rag.py + python3 rag.py -> Retrieved Hyarel
+[ ] nano unsupervised.py + python3 unsupervised.py -> Hyarel Group 2
+
+====================================================
+FULL FLOW - FOR INTERVIEW - SAY THIS ONE LINE
+====================================================
+"I collected data from SQL, cleaned in Pandas, split 80-20, trained Logistic Regression, saved with pickle, deployed with FastAPI, tested with /predict API, and added RAG with ChromaDB + LangChain for chatbot answers."
+
+====================================================
+NEXT AFTER THIS PROJECT:
+====================================================
+DevOps Part - Docker + Kubernetes + Argo CD For This Project - How to deploy ai_project so client can use it.
+END OF FILE
